@@ -20,7 +20,13 @@
 .seg button.on{background:var(--acc);color:#1a0f0a;border-color:var(--acc)}
 .rampbar{height:10px;border-radius:5px;margin:10px 0 3px;background:linear-gradient(90deg,#efe4d0,#f0b060,#e8663a,#c0342a,#7d1f16)}
 .lb{display:flex;justify-content:space-between;font-size:10px;color:var(--sub)}
-.legrow{display:flex;align-items:center;gap:8px;font-size:12px;margin-top:7px}.legrow .sw2{width:13px;height:13px;border-radius:3px;flex:none}.legrow .n{margin-left:auto;color:var(--sub)}
+.legrow{display:flex;align-items:center;gap:8px;font-size:12px;margin-top:7px}
+#lg-age .legrow{cursor:pointer;padding:3px 6px;margin:5px -6px 0;border-radius:6px;transition:background .12s,opacity .12s;-webkit-user-select:none;user-select:none}
+#lg-age .legrow:hover{background:rgba(255,255,255,.06)}
+#lg-age .legrow.off{opacity:.3}
+.leghint{display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--sub);margin:10px 0 0}
+.legall{cursor:pointer;color:#9fc0e8;border:1px solid rgba(120,160,220,.3);border-radius:6px;padding:2px 9px;font-size:11px}
+.legall:hover{background:rgba(120,160,220,.14)}.legrow .sw2{width:13px;height:13px;border-radius:3px;flex:none}.legrow .n{margin-left:auto;color:var(--sub)}
 .note{font-size:11.5px;color:#cfe0ee;line-height:1.5;background:rgba(120,160,220,.08);border:1px solid rgba(120,160,220,.25);border-radius:8px;padding:8px 10px;margin-top:9px}
 .note b{color:#ffce8a}
 #floorLab{font-size:13px}#floorLab b{color:var(--acc);font-size:15px}
@@ -143,7 +149,8 @@ const map=new maplibregl.Map({container:'map',style:{version:8,sources:{
   layers:[{id:'sat',type:'raster',source:'sat'},{id:'dim',type:'background',paint:{'background-color':'#0a0d12','background-opacity':0.24}}]},
   center:[129.2180,35.2452],zoom:15.2,pitch:58,bearing:-19,maxPitch:80,antialias:true});
 map.addControl(new maplibregl.NavigationControl({visualizePitch:true}),'bottom-right');
-let mode='height',onlySite=false,minFloor=1,selId=null,hovId=null;
+let mode='height',onlySite=false,minFloor=1,selId=null,hovId=null,ageSel=new Set([0,1,2,3,4]);
+const AGEBANDS=[[1,'신축 <10년',50,'#4fae8e'],[2,'10~20년',91,'#a8c95a'],[3,'20~30년',143,'#f0a93e'],[4,'30년+ (노후)',189,'#d64545'],[0,'준공일 미상',2957,'#4a4f57']];
 map.on('load',()=>{
   map.addSource('zoning',{type:'geojson',data:ZONING});
   map.addLayer({id:'zone-fill',type:'fill',source:'zoning',layout:{visibility:'none'},paint:{'fill-color':['get','col'],'fill-opacity':0.16}});
@@ -158,25 +165,38 @@ map.on('load',()=>{
   map.addLayer({id:'buildings-3d',type:'fill-extrusion',source:'bld',paint:{'fill-extrusion-height':['get','h'],'fill-extrusion-base':0,'fill-extrusion-opacity':0.95,'fill-extrusion-color':colorExpr('height')}});
   applyFilter();wireHover();computeStats();buildLegends();
 });
-function applyFilter(){const f=['all',['>=',['get','levels'],minFloor]];if(onlySite)f.push(['==',['get','site'],1]);map.setFilter('buildings-3d',f);computeStats();}
-function computeStats(){let n=0,sum=0,mx=0,b1=0,b2=0,b3=0;
-  for(const ft of BUILDINGS.features){const fl=ft.properties.levels||1;if(fl<minFloor)continue;if(onlySite&&ft.properties.site!==1)continue;
+function applyFilter(){const f=['all',['>=',['get','levels'],minFloor]];if(onlySite)f.push(['==',['get','site'],1]);
+  if(mode==='age'&&ageSel.size<5){const any=['any'];ageSel.forEach(b=>{any.push(b===0?['match',['get','ab'],[1,2,3,4],false,true]:['==',['get','ab'],b]);});f.push(any);}
+  map.setFilter('buildings-3d',f);computeStats();}
+function computeStats(){let n=0,sum=0,mx=0,b1=0,b2=0,b3=0;const ac=[0,0,0,0,0];
+  for(const ft of BUILDINGS.features){const p=ft.properties;const fl=p.levels||1;if(fl<minFloor)continue;if(onlySite&&p.site!==1)continue;
+    const ab=(p.ab>=1&&p.ab<=4)?p.ab:0;ac[ab]++;
+    if(mode==='age'&&!ageSel.has(ab))continue;
     n++;sum+=fl;if(fl>mx)mx=fl;if(fl<=2)b1++;else if(fl<=5)b2++;else b3++;}
   document.getElementById('s-count').textContent=n.toLocaleString();
   document.getElementById('s-avg').textContent=n?(sum/n).toFixed(1)+'층':'–';
   document.getElementById('s-max').textContent=mx+'층';
   let rows;
-  if(mode==='zone') rows=ZDIST.map(([l,v,c])=>[l.replace('지역',''),v,c]);
-  else if(mode==='age') rows=ADIST.map(([l,v,c])=>[l,v,c]);
-  else rows=[['저층 1–2층',b1,'#efe4d0'],['중층 3–5층',b2,'#f0b060'],['고층 6층+',b3,'#e8663a']];
+  if(mode==='zone') rows=ZDIST.map(([l,v,c])=>[l.replace('지역',''),v,c,null]);
+  else if(mode==='age') rows=[[1,'신축 <10년','#4fae8e'],[2,'10~20년','#a8c95a'],[3,'20~30년','#f0a93e'],[4,'30년+ 노후','#d64545'],[0,'준공 미상','#4a4f57']].map(([bd,l,c])=>[l,ac[bd],c,bd]);
+  else rows=[['저층 1–2층',b1,'#efe4d0',null],['중층 3–5층',b2,'#f0b060',null],['고층 6층+',b3,'#e8663a',null]];
   const mxb=Math.max(...rows.map(r=>r[1]),1);
-  document.getElementById('dist').innerHTML=rows.map(([l,v,c])=>`<div class="distrow"><span class="lab" title="${l}">${l}</span><span class="bar"><i style="width:${v/mxb*100}%;background:${c}"></i></span><span class="nn">${v}</span></div>`).join('');
+  document.getElementById('dist').innerHTML=rows.map(r=>{const off=(mode==='age'&&r[3]!==null&&!ageSel.has(r[3]))?' style="opacity:.3"':'';return `<div class="distrow"${off}><span class="lab" title="${r[0]}">${r[0]}</span><span class="bar"><i style="width:${r[1]/mxb*100}%;background:${r[2]}"></i></span><span class="nn">${r[1]}</span></div>`;}).join('');
 }
 function buildLegends(){
   document.getElementById('lg-zone').innerHTML=ZDIST.map(([l,v,c])=>`<div class="legrow"><span class="sw2" style="background:${c}"></span>${l}<span class="n">${v}</span></div>`).join('');
-  document.getElementById('lg-age').innerHTML=ADIST.map(([l,v,c])=>`<div class="legrow"><span class="sw2" style="background:${c}"></span>${l}<span class="n">${v}</span></div>`).join('')
-    +`<div class="note">준공연도는 <b>건축물대장(사용승인일)</b> 실데이터입니다. 현재 <b>${MATCHED.toLocaleString()}동</b> 확인 · 나머지는 대장에 사용승인일 미등재(대개 노후·부속 건축물).</div>`;
+  renderAgeLegend();
 }
+function renderAgeLegend(){const all=ageSel.size===5;
+  const hint=`<div class="leghint"><span>밴드 클릭 · 연차별 필터</span><span class="legall" id="age-all">${all?'전체 표시중':'전체 표시'}</span></div>`;
+  const rows=AGEBANDS.map(([bd,l,v,c])=>`<div class="legrow${ageSel.has(bd)?'':' off'}" data-b="${bd}"><span class="sw2" style="background:${c}"></span>${l}<span class="n">${v}</span></div>`).join('');
+  const note=`<div class="note">준공연도는 <b>건축물대장(사용승인일)</b> 실데이터입니다. 현재 <b>${MATCHED.toLocaleString()}동</b> 확인 · 나머지는 대장에 사용승인일 미등재(대개 노후·부속 건축물).</div>`;
+  const el=document.getElementById('lg-age');el.innerHTML=hint+rows+note;
+  el.querySelectorAll('.legrow').forEach(r=>r.onclick=()=>toggleAge(+r.dataset.b));
+  document.getElementById('age-all').onclick=e=>{e.stopPropagation();resetAge();};
+}
+function toggleAge(b){if(ageSel.size===5){ageSel=new Set([b]);}else if(ageSel.has(b)){ageSel.delete(b);if(ageSel.size===0)ageSel=new Set([0,1,2,3,4]);}else{ageSel.add(b);}renderAgeLegend();applyFilter();}
+function resetAge(){ageSel=new Set([0,1,2,3,4]);renderAgeLegend();applyFilter();}
 function wireHover(){
   map.on('mousemove','buildings-3d',e=>{map.getCanvas().style.cursor='pointer';if(e.features.length&&selId===null)hl(e.features[0].id);});
   map.on('mouseleave','buildings-3d',()=>{map.getCanvas().style.cursor='';});
@@ -203,7 +223,7 @@ function setMode(m){mode=m;['height','zone','age'].forEach(x=>document.getElemen
   document.getElementById('lg-zone').style.display=m==='zone'?'block':'none';
   document.getElementById('lg-age').style.display=m==='age'?'block':'none';
   const zv=m==='zone'?'visible':'none';map.setLayoutProperty('zone-fill','visibility',zv);map.setLayoutProperty('zone-line','visibility',zv);
-  map.setPaintProperty('buildings-3d','fill-extrusion-color',colorExpr(m));computeStats();}
+  map.setPaintProperty('buildings-3d','fill-extrusion-color',colorExpr(m));renderAgeLegend();applyFilter();}
 document.getElementById('m-height').onclick=()=>setMode('height');
 document.getElementById('m-zone').onclick=()=>setMode('zone');
 document.getElementById('m-age').onclick=()=>setMode('age');
