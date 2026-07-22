@@ -20,15 +20,16 @@
 .seg button.on{background:var(--acc);color:#1a0f0a;border-color:var(--acc)}
 .rampbar{height:10px;border-radius:5px;margin:10px 0 3px;background:linear-gradient(90deg,#efe4d0,#f0b060,#e8663a,#c0342a,#7d1f16)}
 .lb{display:flex;justify-content:space-between;font-size:10px;color:var(--sub)}
-.legrow{display:flex;align-items:center;gap:8px;font-size:12px;margin-top:7px}
-#lg-age .legrow{cursor:pointer;padding:3px 6px;margin:5px -6px 0;border-radius:6px;transition:background .12s,opacity .12s;-webkit-user-select:none;user-select:none}
-#lg-age .legrow:hover{background:rgba(255,255,255,.06)}
-#lg-age .legrow.off{opacity:.3}
-.leghint{display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--sub);margin:10px 0 0}
-.legall{cursor:pointer;color:#9fc0e8;border:1px solid rgba(120,160,220,.3);border-radius:6px;padding:2px 9px;font-size:11px}
-.legall:hover{background:rgba(120,160,220,.14)}.legrow .sw2{width:13px;height:13px;border-radius:3px;flex:none}.legrow .n{margin-left:auto;color:var(--sub)}
+.legrow{display:flex;align-items:center;gap:8px;font-size:12px;margin-top:7px}.legrow .sw2{width:13px;height:13px;border-radius:3px;flex:none}.legrow .n{margin-left:auto;color:var(--sub)}
 .note{font-size:11.5px;color:#cfe0ee;line-height:1.5;background:rgba(120,160,220,.08);border:1px solid rgba(120,160,220,.25);border-radius:8px;padding:8px 10px;margin-top:9px}
 .note b{color:#ffce8a}
+.sec h3 .src{font-weight:400;font-size:10px;color:var(--sub);margin-left:4px}
+.stat b.dn{color:#e8663a}
+#popchart{margin-top:9px}
+.popdiag{font-size:11.5px;color:#dfe7ef;line-height:1.55;margin-top:9px;background:rgba(232,102,58,.08);border:1px solid rgba(232,102,58,.25);border-radius:8px;padding:8px 10px}
+.popdiag b{color:#ffb27a}
+.dlbtn{margin-top:9px;width:100%;background:rgba(120,160,220,.12);color:#bcd2ec;border:1px solid rgba(120,160,220,.3);border-radius:7px;padding:7px;font-size:11.5px;cursor:pointer;transition:background .12s}
+.dlbtn:hover{background:rgba(120,160,220,.22)}
 #floorLab{font-size:13px}#floorLab b{color:var(--acc);font-size:15px}
 input[type=range]{width:100%;accent-color:var(--acc);margin-top:6px}
 .stat{display:flex;justify-content:space-between;font-size:13px;padding:5px 0}.stat b{font-size:15px}
@@ -47,7 +48,7 @@ input[type=range]{width:100%;accent-color:var(--acc);margin-top:6px}
 <div id="map"></div><div id="vignette"></div>
 <div id="top"><div class="brand">Hay<b>Day</b> · 도시환경 공간분석툴</div>
 <div class="site">● 기장 만화천 · 원도심 통합재생 대상지</div><div class="spacer"></div>
-<div class="credit">데이터: VWorld 건물·용도지역 · 건축물대장(준공연도) · 위성 Esri</div></div>
+<div class="credit">데이터: VWorld 건물·용도지역 · 건축물대장(준공연도) · KOSIS 주민등록 · 위성 Esri</div></div>
 <div id="panel">
   <div class="sec"><h3>레이어</h3>
     <div class="toggle"><span>건물 3D</span><div class="sw on" id="t-bld"></div></div>
@@ -68,6 +69,14 @@ input[type=range]{width:100%;accent-color:var(--acc);margin-top:6px}
     <div class="stat"><span>평균 지상층수</span><b id="s-avg">–</b></div>
     <div class="stat"><span>최고 층수</span><b id="s-max">–</b></div>
     <div class="dist" id="dist"></div></div>
+  <div class="sec"><h3>인구·인구학 <span class="src">KOSIS 주민등록 · 기장읍</span></h3>
+    <div class="stat"><span>기장읍 인구(2025)</span><b id="p-cur">–</b></div>
+    <div class="stat"><span>정점(2018) 대비</span><b class="dn" id="p-chg">–</b></div>
+    <div class="stat"><span>65세+ 고령</span><b class="dn" id="p-old">–</b></div>
+    <div class="stat"><span>0–14 유소년</span><b id="p-young">–</b></div>
+    <div id="popchart"></div>
+    <div class="popdiag" id="popdiag"></div>
+    <button class="dlbtn" id="pop-dl">인구 그래프 PNG 저장</button></div>
 </div>
 <div id="info"><span class="cl" id="i-close">✕</span>
   <div class="t" id="i-tag">건물</div>
@@ -149,8 +158,7 @@ const map=new maplibregl.Map({container:'map',style:{version:8,sources:{
   layers:[{id:'sat',type:'raster',source:'sat'},{id:'dim',type:'background',paint:{'background-color':'#0a0d12','background-opacity':0.24}}]},
   center:[129.2180,35.2452],zoom:15.2,pitch:58,bearing:-19,maxPitch:80,antialias:true});
 map.addControl(new maplibregl.NavigationControl({visualizePitch:true}),'bottom-right');
-let mode='height',onlySite=false,minFloor=1,selId=null,hovId=null,ageSel=new Set([0,1,2,3,4]);
-const AGEBANDS=[[1,'신축 <10년',50,'#4fae8e'],[2,'10~20년',91,'#a8c95a'],[3,'20~30년',143,'#f0a93e'],[4,'30년+ (노후)',189,'#d64545'],[0,'준공일 미상',2957,'#4a4f57']];
+let mode='height',onlySite=false,minFloor=1,selId=null,hovId=null;
 map.on('load',()=>{
   map.addSource('zoning',{type:'geojson',data:ZONING});
   map.addLayer({id:'zone-fill',type:'fill',source:'zoning',layout:{visibility:'none'},paint:{'fill-color':['get','col'],'fill-opacity':0.16}});
@@ -165,38 +173,25 @@ map.on('load',()=>{
   map.addLayer({id:'buildings-3d',type:'fill-extrusion',source:'bld',paint:{'fill-extrusion-height':['get','h'],'fill-extrusion-base':0,'fill-extrusion-opacity':0.95,'fill-extrusion-color':colorExpr('height')}});
   applyFilter();wireHover();computeStats();buildLegends();
 });
-function applyFilter(){const f=['all',['>=',['get','levels'],minFloor]];if(onlySite)f.push(['==',['get','site'],1]);
-  if(mode==='age'&&ageSel.size<5){const any=['any'];ageSel.forEach(b=>{any.push(b===0?['match',['get','ab'],[1,2,3,4],false,true]:['==',['get','ab'],b]);});f.push(any);}
-  map.setFilter('buildings-3d',f);computeStats();}
-function computeStats(){let n=0,sum=0,mx=0,b1=0,b2=0,b3=0;const ac=[0,0,0,0,0];
-  for(const ft of BUILDINGS.features){const p=ft.properties;const fl=p.levels||1;if(fl<minFloor)continue;if(onlySite&&p.site!==1)continue;
-    const ab=(p.ab>=1&&p.ab<=4)?p.ab:0;ac[ab]++;
-    if(mode==='age'&&!ageSel.has(ab))continue;
+function applyFilter(){const f=['all',['>=',['get','levels'],minFloor]];if(onlySite)f.push(['==',['get','site'],1]);map.setFilter('buildings-3d',f);computeStats();}
+function computeStats(){let n=0,sum=0,mx=0,b1=0,b2=0,b3=0;
+  for(const ft of BUILDINGS.features){const fl=ft.properties.levels||1;if(fl<minFloor)continue;if(onlySite&&ft.properties.site!==1)continue;
     n++;sum+=fl;if(fl>mx)mx=fl;if(fl<=2)b1++;else if(fl<=5)b2++;else b3++;}
   document.getElementById('s-count').textContent=n.toLocaleString();
   document.getElementById('s-avg').textContent=n?(sum/n).toFixed(1)+'층':'–';
   document.getElementById('s-max').textContent=mx+'층';
   let rows;
-  if(mode==='zone') rows=ZDIST.map(([l,v,c])=>[l.replace('지역',''),v,c,null]);
-  else if(mode==='age') rows=[[1,'신축 <10년','#4fae8e'],[2,'10~20년','#a8c95a'],[3,'20~30년','#f0a93e'],[4,'30년+ 노후','#d64545'],[0,'준공 미상','#4a4f57']].map(([bd,l,c])=>[l,ac[bd],c,bd]);
-  else rows=[['저층 1–2층',b1,'#efe4d0',null],['중층 3–5층',b2,'#f0b060',null],['고층 6층+',b3,'#e8663a',null]];
+  if(mode==='zone') rows=ZDIST.map(([l,v,c])=>[l.replace('지역',''),v,c]);
+  else if(mode==='age') rows=ADIST.map(([l,v,c])=>[l,v,c]);
+  else rows=[['저층 1–2층',b1,'#efe4d0'],['중층 3–5층',b2,'#f0b060'],['고층 6층+',b3,'#e8663a']];
   const mxb=Math.max(...rows.map(r=>r[1]),1);
-  document.getElementById('dist').innerHTML=rows.map(r=>{const off=(mode==='age'&&r[3]!==null&&!ageSel.has(r[3]))?' style="opacity:.3"':'';return `<div class="distrow"${off}><span class="lab" title="${r[0]}">${r[0]}</span><span class="bar"><i style="width:${r[1]/mxb*100}%;background:${r[2]}"></i></span><span class="nn">${r[1]}</span></div>`;}).join('');
+  document.getElementById('dist').innerHTML=rows.map(([l,v,c])=>`<div class="distrow"><span class="lab" title="${l}">${l}</span><span class="bar"><i style="width:${v/mxb*100}%;background:${c}"></i></span><span class="nn">${v}</span></div>`).join('');
 }
 function buildLegends(){
   document.getElementById('lg-zone').innerHTML=ZDIST.map(([l,v,c])=>`<div class="legrow"><span class="sw2" style="background:${c}"></span>${l}<span class="n">${v}</span></div>`).join('');
-  renderAgeLegend();
+  document.getElementById('lg-age').innerHTML=ADIST.map(([l,v,c])=>`<div class="legrow"><span class="sw2" style="background:${c}"></span>${l}<span class="n">${v}</span></div>`).join('')
+    +`<div class="note">준공연도는 <b>건축물대장(사용승인일)</b> 실데이터입니다. 현재 <b>${MATCHED.toLocaleString()}동</b> 확인 · 나머지는 대장에 사용승인일 미등재(대개 노후·부속 건축물).</div>`;
 }
-function renderAgeLegend(){const all=ageSel.size===5;
-  const hint=`<div class="leghint"><span>밴드 클릭 · 연차별 필터</span><span class="legall" id="age-all">${all?'전체 표시중':'전체 표시'}</span></div>`;
-  const rows=AGEBANDS.map(([bd,l,v,c])=>`<div class="legrow${ageSel.has(bd)?'':' off'}" data-b="${bd}"><span class="sw2" style="background:${c}"></span>${l}<span class="n">${v}</span></div>`).join('');
-  const note=`<div class="note">준공연도는 <b>건축물대장(사용승인일)</b> 실데이터입니다. 현재 <b>${MATCHED.toLocaleString()}동</b> 확인 · 나머지는 대장에 사용승인일 미등재(대개 노후·부속 건축물).</div>`;
-  const el=document.getElementById('lg-age');el.innerHTML=hint+rows+note;
-  el.querySelectorAll('.legrow').forEach(r=>r.onclick=()=>toggleAge(+r.dataset.b));
-  document.getElementById('age-all').onclick=e=>{e.stopPropagation();resetAge();};
-}
-function toggleAge(b){if(ageSel.size===5){ageSel=new Set([b]);}else if(ageSel.has(b)){ageSel.delete(b);if(ageSel.size===0)ageSel=new Set([0,1,2,3,4]);}else{ageSel.add(b);}renderAgeLegend();applyFilter();}
-function resetAge(){ageSel=new Set([0,1,2,3,4]);renderAgeLegend();applyFilter();}
 function wireHover(){
   map.on('mousemove','buildings-3d',e=>{map.getCanvas().style.cursor='pointer';if(e.features.length&&selId===null)hl(e.features[0].id);});
   map.on('mouseleave','buildings-3d',()=>{map.getCanvas().style.cursor='';});
@@ -223,9 +218,38 @@ function setMode(m){mode=m;['height','zone','age'].forEach(x=>document.getElemen
   document.getElementById('lg-zone').style.display=m==='zone'?'block':'none';
   document.getElementById('lg-age').style.display=m==='age'?'block':'none';
   const zv=m==='zone'?'visible':'none';map.setLayoutProperty('zone-fill','visibility',zv);map.setLayoutProperty('zone-line','visibility',zv);
-  map.setPaintProperty('buildings-3d','fill-extrusion-color',colorExpr(m));renderAgeLegend();applyFilter();}
+  map.setPaintProperty('buildings-3d','fill-extrusion-color',colorExpr(m));computeStats();}
 document.getElementById('m-height').onclick=()=>setMode('height');
 document.getElementById('m-zone').onclick=()=>setMode('zone');
 document.getElementById('m-age').onclick=()=>setMode('age');
 const fr=document.getElementById('floor');fr.addEventListener('input',()=>{minFloor=+fr.value;document.getElementById('fv').textContent=fr.value;applyFilter();});
+const POP={yrs:[2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025],
+  val:[53902,54097,53543,54025,54699,55013,55735,55825,55567,53230,52846,53029,52152,51101,51251],
+  peak:{y:2018,v:55825},cur:{y:2025,v:51251},old:27.8,young:7.9,agi:351};
+function renderPop(){
+  const w=228,h=104,pad=6,n=POP.val.length;
+  const mn=Math.min(...POP.val),mx=Math.max(...POP.val),lo=mn-1500,hi=mx+500,bw=(w-pad*2)/n;
+  let bars='';
+  POP.val.forEach((v,i)=>{const bh=Math.max(1,(v-lo)/(hi-lo)*(h-24)),x=pad+i*bw,y=h-16-bh,
+    last=i===n-1,pk=POP.yrs[i]===POP.peak.y,col=last?'#e8663a':pk?'#f0b060':'#5b6a7e';
+    bars+=`<rect x="${(x+1).toFixed(1)}" y="${y.toFixed(1)}" width="${(bw-2).toFixed(1)}" height="${bh.toFixed(1)}" rx="1.5" fill="${col}"/>`;});
+  const lab=[0,POP.yrs.indexOf(POP.peak.y),n-1].map(i=>{const x=pad+i*bw+bw/2;
+    return `<text x="${x.toFixed(1)}" y="${h-4}" text-anchor="middle" font-size="8.5" fill="#8a94a3">${POP.yrs[i]}</text>`;}).join('');
+  document.getElementById('popchart').innerHTML=`<svg id="popsvg" viewBox="0 0 ${w} ${h}" width="100%" xmlns="http://www.w3.org/2000/svg" style="background:#0e131b;border-radius:8px">${bars}${lab}</svg>`;
+  const dropPct=((POP.peak.v-POP.cur.v)/POP.peak.v*100).toFixed(1);
+  document.getElementById('p-cur').textContent=POP.cur.v.toLocaleString()+'명';
+  document.getElementById('p-chg').textContent='-'+dropPct+'%';
+  document.getElementById('p-old').textContent=POP.old+'%';
+  document.getElementById('p-young').textContent=POP.young+'%';
+  document.getElementById('popdiag').innerHTML=`<b>진단:</b> ${POP.peak.y}년 ${POP.peak.v.toLocaleString()}명 정점 후 ${POP.cur.y}년 ${POP.cur.v.toLocaleString()}명으로 <b>${dropPct}% 감소</b>. 65세+ ${POP.old}%로 <b>초고령사회</b>, 유소년 ${POP.young}%·노령화지수 ${POP.agi} — 원도심 인구 쇠퇴·고령화 정량 확인.`;
+}
+document.getElementById('pop-dl').onclick=()=>{
+  const svg=document.getElementById('popsvg');if(!svg)return;
+  const xml=new XMLSerializer().serializeToString(svg),img=new Image();
+  img.onload=()=>{const c=document.createElement('canvas');c.width=684;c.height=312;const g=c.getContext('2d');
+    g.fillStyle='#0e131b';g.fillRect(0,0,c.width,c.height);g.drawImage(img,0,0,c.width,c.height);
+    c.toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='기장읍_인구변화_2011-2025.png';a.click();});};
+  img.src='data:image/svg+xml;base64,'+btoa(unescape(encodeURIComponent(xml)));
+};
+renderPop();
 </script></body></html>
