@@ -1,0 +1,29 @@
+{
+ "region": "seogu",
+ "order": [
+  "BD",
+  "EMDV",
+  "VD",
+  "ZONING",
+  "EMD",
+  "SIGG",
+  "SITE",
+  "CL",
+  "SITEPAR",
+  "POP",
+  "VAC"
+ ],
+ "sizes": {
+  "BD": 4227654,
+  "EMDV": 22329,
+  "VD": 1083,
+  "ZONING": 213195,
+  "EMD": 21571,
+  "SIGG": 17625,
+  "SITE": 51718,
+  "CL": 36076,
+  "SITEPAR": 14489,
+  "POP": 2015,
+  "VAC": 353
+ }
+}
