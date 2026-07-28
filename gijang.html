@@ -9,7 +9,7 @@
 #top{position:absolute;top:0;left:0;right:0;height:56px;z-index:5;display:flex;align-items:center;gap:14px;padding:0 18px;background:linear-gradient(180deg,rgba(8,11,16,.92),rgba(8,11,16,.35));backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
 #top .brand{font-weight:800;letter-spacing:-.02em;font-size:15px}#top .brand b{color:var(--acc)}
 #top .site{font-size:12px;color:var(--sub);padding:5px 10px;border:1px solid var(--line);border-radius:20px;background:rgba(255,255,255,.03)}
-#top .spacer{flex:1}#top .credit{font-size:11px;color:var(--sub)}
+#top .spacer{flex:1}#top .credit{flex:0 1 auto;min-width:0;font-size:11px;color:var(--sub)}
 #panel{position:absolute;top:70px;left:14px;width:300px;max-height:calc(100% - 88px);overflow:auto;z-index:5;background:var(--panel);border:1px solid var(--line);border-radius:14px;backdrop-filter:blur(10px);box-shadow:0 12px 40px rgba(0,0,0,.45)}
 #panel .sec{padding:14px 16px;border-bottom:1px solid var(--line)}#panel .sec:last-child{border-bottom:0}
 #panel h3{margin:0 0 10px;font-size:11px;letter-spacing:.08em;color:var(--sub);text-transform:uppercase;font-weight:700}
@@ -50,7 +50,7 @@ input[type=range]{width:100%;accent-color:var(--acc);margin-top:6px}
 #info .g{display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-top:1px solid var(--line);margin-top:6px}#info .g:first-of-type{border-top:0}#info .g b{color:#ffce8a}
 #hint{position:absolute;bottom:16px;right:14px;z-index:5;font-size:11px;color:var(--sub);background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 12px;backdrop-filter:blur(8px)}
 .maplibregl-ctrl-attrib{font-size:9px}@media(max-width:640px){#panel{width:calc(100% - 28px)}#info{width:calc(100% - 28px)}}
-</style><style>#top .rgsw{display:flex;gap:6px;margin-left:6px}#top .rgsw a{font-size:12px;text-decoration:none;color:#93a3b6;padding:5px 11px;border:1px solid rgba(255,255,255,.09);border-radius:20px;background:rgba(255,255,255,.03);font-weight:600;transition:.12s}#top .rgsw a:hover{background:rgba(255,255,255,.09);color:#eef2f7}#top .rgsw a.on{background:#ff7a5c;color:#1a0f0a;border-color:#ff7a5c}#top .rgsw a.rghome{color:#93a3b6;opacity:.75}</style></head><body>
+</style><style>#top .rgsw{display:flex;gap:6px;margin-left:6px;flex:0 0 auto}#top .rgsw a{white-space:nowrap;flex:0 0 auto;font-size:12px;text-decoration:none;color:#93a3b6;padding:5px 11px;border:1px solid rgba(255,255,255,.09);border-radius:20px;background:rgba(255,255,255,.03);font-weight:600;transition:.12s}#top .rgsw a:hover{background:rgba(255,255,255,.09);color:#eef2f7}#top .rgsw a.on,#top .rgsw a.rgon{background:#ff7a5c;color:#1a0f0a;border-color:#ff7a5c}#top .rgsw a.rghome{color:#93a3b6;opacity:.75}</style></head><body>
 <div id="map"></div><div id="vignette"></div>
 <div id="top"><div class="brand">Hay<b>Day</b> · 도시환경 공간분석툴</div>
 <div class="site">● 기장 만화천 · 원도심 통합재생 대상지</div><div class="rgsw"><a href="./gijang.html" class="rgon">기장 만화천</a><a href="./seogu.html" class="rg">부산 서구</a><a href="./" class="rghome" title="지역 선택">전체</a></div><div class="spacer"></div>
@@ -160,8 +160,8 @@ const AGEMATCH=['match',['get','ab'],1,'#4fae8e',2,'#a8c95a',3,'#f0a93e',4,'#d64
 function colorExpr(m){const base=m==='height'?RAMP:m==='zone'?ZONEMATCH:AGEMATCH;
   return ['case',['boolean',['feature-state','hover'],false],'#ffe08a',base];}
 const map=new maplibregl.Map({container:'map',style:{version:8,sources:{
-  sat:{type:'raster',tiles:['https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],tileSize:256,attribution:'Imagery (c) Esri | 건물·용도지역 (c) VWorld | 준공연도 (c) 건축물대장'}},
-  layers:[{id:'sat',type:'raster',source:'sat'},{id:'dim',type:'background',paint:{'background-color':'#0a0d12','background-opacity':0.24}}]},
+  sat:{type:'raster',tiles:['https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],tileSize:256,maxzoom:19,attribution:'Imagery (c) Esri | 건물·용도지역 (c) VWorld | 준공연도 (c) 건축물대장'}},
+  layers:[{id:'sat',type:'raster',source:'sat'},{id:'dim',type:'background',paint:{'background-color':'#0a0d12','background-opacity':0.24}}],sky:{'sky-color':'#0f1826','horizon-color':'#243347','fog-color':'#0b0e13','fog-ground-blend':0.5,'horizon-fog-blend':0.6,'sky-horizon-blend':0.8}},
   center:[129.2180,35.2452],zoom:15.2,pitch:58,bearing:-19,maxPitch:80,antialias:true});
 map.addControl(new maplibregl.NavigationControl({visualizePitch:true}),'bottom-right');
 let mode='height',onlySite=false,minFloor=1,selId=null,hovId=null,ageSel=new Set([0,1,2,3,4]);
@@ -265,7 +265,7 @@ function renderPop(){
 }
 document.getElementById('pop-dl').onclick=()=>{
   const svg=document.getElementById('popsvg');if(!svg)return;
-  const xml=new XMLSerializer().serializeToString(svg),img=new Image();
+  const _px=svg.cloneNode(true);_px.setAttribute('width','750');_px.setAttribute('height','312');const xml=new XMLSerializer().serializeToString(_px),img=new Image();
   img.onload=()=>{const c=document.createElement('canvas');c.width=684;c.height=312;const g=c.getContext('2d');
     g.fillStyle='#0e131b';g.fillRect(0,0,c.width,c.height);g.drawImage(img,0,0,c.width,c.height);
     c.toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='기장읍_인구변화_2011-2025.png';a.click();});};
