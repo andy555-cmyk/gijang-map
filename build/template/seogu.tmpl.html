@@ -501,4 +501,88 @@ function buildVac(){const mx=Math.max(...VAC.map(r=>r[4]));
   document.getElementById('vac').innerHTML=VAC.slice().sort((a,b)=>b[4]-a[4]).map(r=>
    `<div class="distrow" title="1등급 ${r[1]} · 2등급 ${r[2]} · 3등급 ${r[3]}"><span class="lab">${r[0]}</span><span class="bar">
     <i style="width:${r[4]/mx*100}%;background:linear-gradient(90deg,#d64545,#f0a93e)"></i></span><span class="nn">${r[4]}호</span></div>`).join('');}
-</script></body></html>
+</script>
+<style id="hayday-shell-css">
+/* ── HAYDAY_SHELL_V1 : 좌측 목록 / 우측 디테일 ───────────────── */
+#panel{width:242px!important;padding:7px!important;max-height:calc(100% - 96px)!important}
+#panel .sec{padding:14px 16px}
+#navlist{display:flex;flex-direction:column;gap:2px}
+.navitem{padding:9px 11px;border-radius:9px;cursor:pointer;display:flex;flex-direction:column;gap:2px;
+  transition:background .12s;-webkit-user-select:none;user-select:none}
+.navitem:hover{background:rgba(255,255,255,.06)}
+.navitem.on{background:var(--acc)}
+.navitem .nt{font-size:12.5px;font-weight:700;letter-spacing:.01em;line-height:1.3}
+.navitem.on .nt{color:#180c07}
+.navitem .ns{font-size:10px;color:var(--sub);line-height:1.35}
+.navitem.on .ns{color:rgba(24,12,7,.72)}
+#detail{position:absolute;top:70px;right:14px;width:364px;max-height:calc(100% - 128px);overflow:auto;
+  z-index:6;background:var(--panel);border:1px solid var(--line);border-radius:14px;
+  backdrop-filter:blur(10px);box-shadow:0 12px 40px rgba(0,0,0,.45)}
+#detail-h{padding:13px 16px 11px;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:2;
+  background:var(--panel);backdrop-filter:blur(10px)}
+#detail-t{display:block;font-size:13px;font-weight:800;letter-spacing:.02em}
+#detail-s{display:block;font-size:10.5px;color:var(--sub);margin-top:3px;line-height:1.4}
+#detail-b > .sec{border-bottom:0}
+#detail::-webkit-scrollbar,#panel::-webkit-scrollbar{width:8px}
+#detail::-webkit-scrollbar-thumb,#panel::-webkit-scrollbar-thumb{background:rgba(255,255,255,.14);border-radius:8px}
+@media (max-width:1180px){#detail{width:318px}#panel{width:206px!important}}
+@media (max-width:860px){#detail{width:280px;top:64px}}
+</style>
+<script id="hayday-shell-js">
+/* HAYDAY_SHELL_V1 — 기존 앱 로직 무수정. .sec 를 우측으로 옮기고 display 로만 전환한다. */
+(function(){
+  function build(){
+    var panel=document.getElementById('panel');
+    if(!panel||document.getElementById('detail'))return;
+    var secs=[];var kids=panel.children;
+    for(var i=0;i<kids.length;i++){if(kids[i].classList&&kids[i].classList.contains('sec'))secs.push(kids[i]);}
+    if(secs.length<2)return;
+
+    var items=secs.map(function(sec,i){
+      var h=sec.querySelector('h3'),sub='',title='항목 '+(i+1);
+      if(h){
+        var src=h.querySelector('.src');
+        if(src){sub=src.textContent.trim();src.parentNode.removeChild(src);}
+        title=h.textContent.trim();
+        h.parentNode.removeChild(h);
+      }
+      return {sec:sec,title:title,sub:sub};
+    });
+
+    var det=document.createElement('div');det.id='detail';
+    det.innerHTML='<div id="detail-h"><span id="detail-t"></span><span id="detail-s"></span></div><div id="detail-b"></div>';
+    document.body.appendChild(det);
+    var body=det.querySelector('#detail-b');
+    var tEl=det.querySelector('#detail-t'),sEl=det.querySelector('#detail-s');
+
+    var nav=document.createElement('div');nav.id='navlist';
+    panel.insertBefore(nav,panel.firstChild);
+    /* 섹션은 제거하지 않고 우측으로 '이동'한다 — document 안에 남으므로 기존 참조가 전부 유효하다 */
+    items.forEach(function(it){body.appendChild(it.sec);});
+
+    var cur=-1;
+    function sel(i){
+      if(cur===i)return;cur=i;
+      for(var j=0;j<items.length;j++){items[j].sec.style.display=(j===i?'':'none');}
+      var ch=nav.children;
+      for(var k=0;k<ch.length;k++){ch[k].classList.toggle('on',k===i);}
+      tEl.textContent=items[i].title;
+      sEl.textContent=items[i].sub;
+      sEl.style.display=items[i].sub?'block':'none';
+      det.scrollTop=0;
+    }
+    items.forEach(function(it,i){
+      var b=document.createElement('div');b.className='navitem';
+      var nt=document.createElement('span');nt.className='nt';nt.textContent=it.title;b.appendChild(nt);
+      if(it.sub){var ns=document.createElement('span');ns.className='ns';ns.textContent=it.sub;b.appendChild(ns);}
+      b.addEventListener('click',function(){sel(i);});
+      nav.appendChild(b);
+    });
+    sel(0);
+    window.__shellSelect=sel;
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',build);
+  else build();
+})();
+</script>
+</body></html>
