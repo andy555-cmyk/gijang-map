@@ -62,8 +62,8 @@ select{width:100%;background:rgba(255,255,255,.04);color:var(--ink);border:1px s
 #info .g{display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-top:1px solid var(--line);margin-top:6px}#info .g:first-of-type{border-top:0}#info .g b{color:#ffce8a}
 #hint{position:absolute;bottom:16px;right:14px;z-index:5;font-size:11px;color:var(--sub);background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 12px;backdrop-filter:blur(8px);max-width:320px;line-height:1.5}
 .vdmk{padding:2px 8px;border-radius:11px;background:rgba(255,122,60,.92);color:#180a04;font-size:11.5px;font-weight:800;border:1.5px solid rgba(255,255,255,.7);box-shadow:0 2px 8px rgba(0,0,0,.55);white-space:nowrap;pointer-events:none}
-.clmk{width:22px;height:22px;border-radius:50%;background:rgba(124,196,255,.9);color:#08131c;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;cursor:pointer;border:1.5px solid rgba(255,255,255,.75);box-shadow:0 2px 8px rgba(0,0,0,.5)}
-.clmk.main{background:rgba(255,209,102,.95);color:#241a02;width:26px;height:26px;font-size:13px}
+.clmk{width:30px;height:30px;border-radius:50%;background:rgba(124,196,255,.95);color:#08131c;font-size:15px;font-weight:800;display:flex;align-items:center;justify-content:center;cursor:pointer;border:1.5px solid rgba(255,255,255,.75);box-shadow:0 2px 8px rgba(0,0,0,.5)}
+.clmk.main{background:rgba(255,207,61,1);color:#241a02;width:38px;height:38px;font-size:18px;border-width:2.5px;box-shadow:0 3px 12px rgba(0,0,0,.6),0 0 0 3px rgba(255,207,61,.28)}
 .maplibregl-ctrl-attrib{font-size:9px}
 @media(max-width:640px){#panel{width:calc(100% - 28px)}#info{width:calc(100% - 28px)}#top .credit{display:none}}
 </style><style>#top .rgsw{display:flex;gap:6px;margin-left:6px;flex:0 0 auto}#top .rgsw a{white-space:nowrap;flex:0 0 auto;font-size:12px;text-decoration:none;color:#93a3b6;padding:5px 11px;border:1px solid rgba(255,255,255,.09);border-radius:20px;background:rgba(255,255,255,.03);font-weight:600;transition:.12s}#top .rgsw a:hover{background:rgba(255,255,255,.09);color:#eef2f7}#top .rgsw a.on,#top .rgsw a.rgon{background:#ff7a5c;color:#1a0f0a;border-color:#ff7a5c}#top .rgsw a.rghome{color:#93a3b6;opacity:.75}</style></head><body>
@@ -271,14 +271,14 @@ function init(){if(inited)return;inited=true;
   map.addSource('sigg',{type:'geojson',data:SIGG});
   map.addLayer({id:'sigg-line',type:'line',source:'sigg',paint:{'line-color':'#cfe0ee','line-width':2,'line-opacity':0.5}});
   map.addSource('site',{type:'geojson',data:SITE});
-  map.addLayer({id:'site-fill',type:'fill',source:'site',paint:{'fill-color':'#ff7a5c','fill-opacity':0.08}});
-  map.addLayer({id:'site-line',type:'line',source:'site',paint:{'line-color':'#ff8a68','line-width':2.4,'line-opacity':0.95}});
+  map.addLayer({id:'site-fill',type:'fill',source:'site',paint:{'fill-color':'#ff7a5c','fill-opacity':0.16}});
+  map.addLayer({id:'site-halo',type:'line',source:'site',paint:{'line-color':'#ffffff','line-width':8,'line-opacity':0.45,'line-blur':1}});map.addLayer({id:'site-line',type:'line',source:'site',paint:{'line-color':'#ff4d1f','line-width':4.2,'line-opacity':1}});
   /* 빈집밀집구역: 대표필지(사실) + 면적등가원(추정) */
   map.addSource('cl-lot',{type:'geojson',data:{type:'FeatureCollection',features:CL.map(c=>({type:'Feature',properties:{code:c.code,main:c.main},geometry:{type:'MultiPolygon',coordinates:c.lot}}))}});
   map.addSource('cl-cir',{type:'geojson',data:{type:'FeatureCollection',features:CL.map(c=>({type:'Feature',properties:{code:c.code,main:c.main},geometry:{type:'Polygon',coordinates:c.circ}}))}});
-  map.addLayer({id:'cl-cir-fill',type:'fill',source:'cl-cir',paint:{'fill-color':['case',['==',['get','main'],1],'#ffd166','#7cc4ff'],'fill-opacity':0.1}});
-  map.addLayer({id:'cl-cir-line',type:'line',source:'cl-cir',paint:{'line-color':['case',['==',['get','main'],1],'#ffd166','#7cc4ff'],'line-width':1.6,'line-dasharray':[3,2],'line-opacity':0.85}});
-  map.addLayer({id:'cl-lot-line',type:'line',source:'cl-lot',paint:{'line-color':['case',['==',['get','main'],1],'#ffe08a','#a8dcff'],'line-width':2.4,'line-opacity':1}});
+  map.addLayer({id:'cl-cir-fill',type:'fill',source:'cl-cir',paint:{'fill-color':['case',['==',['get','main'],1],'#ffcf3d','#7cc4ff'],'fill-opacity':0.24}});
+  map.addLayer({id:'cl-cir-line',type:'line',source:'cl-cir',paint:{'line-color':['case',['==',['get','main'],1],'#ffcf3d','#7cc4ff'],'line-width':3.6,'line-dasharray':[4,2.5],'line-opacity':1}});
+  map.addLayer({id:'cl-lot-line',type:'line',source:'cl-lot',paint:{'line-color':['case',['==',['get','main'],1],'#ffe89a','#a8dcff'],'line-width':3.2,'line-opacity':1}});
   CL.forEach(c=>{const d=document.createElement('div');d.className='clmk'+(c.main?' main':'');d.textContent=c.code;
     d.title=c.code+') '+c.jibun+' · 빈집 '+c.vcnt+'호';
     d.onclick=()=>{const s=document.getElementById('cl-sel');s.value=String(CL.indexOf(c));renderCluster(s.value);};
@@ -443,7 +443,7 @@ tog('t-zone',v=>vis(['zone-fill','zone-line'],v));
 tog('t-emd',v=>vis(['emd-line'],v));
 tog('t-emdv',v=>{vis(['emdv-fill','emdv-line'],v);document.getElementById('lg-vd').style.display=v?'block':'none';VDMK.forEach(m=>m.getElement().style.display=v?'':'none');});
 tog('t-sigg',v=>vis(['sigg-line'],v));
-tog('t-site',v=>vis(['site-fill','site-line'],v));
+tog('t-site',v=>vis(['site-fill','site-halo','site-line'],v));
 tog('t-cl',v=>{vis(['cl-cir-fill','cl-cir-line','cl-lot-line'],v);CLMK.forEach(m=>m.getElement().style.display=v?'':'none');});
 tog('t-sat',v=>vis(['sat'],v));
 tog('t-only',v=>{onlySite=v;applyFilter();});
