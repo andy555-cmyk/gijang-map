@@ -276,26 +276,29 @@ document.getElementById('pop-dl').onclick=()=>{
 renderPop();
 </script><script>(function(){var n=0;var t=setInterval(function(){n++;try{if(window.map&&map.isStyleLoaded&&map.isStyleLoaded()){if(!map.getLayer('buildings-3d')&&window.__I){window.__I();}clearInterval(t);}}catch(e){}if(n>120)clearInterval(t);},250);})();</script>
 <style id="hayday-shell-css">
-/* ── HAYDAY_SHELL_V4 : 상단 가로 탭 + 아래 패널 ───────────────────── */
-#shellwrap{position:absolute;top:62px;left:14px;right:14px;z-index:6;pointer-events:none;
-  display:flex;flex-direction:column;align-items:flex-start;gap:8px}
+/* ── HAYDAY_SHELL_V5 : 헤더 아래 전폭 탭바 + 그 아래 패널 ──────────── */
+#shellwrap{position:absolute;top:56px;left:0;right:0;z-index:6;pointer-events:none;
+  display:flex;flex-direction:column;align-items:flex-start}
 
-/* 탭바 — 기존 #panel 을 가로 바로 전환 */
-#panel{position:static!important;width:auto!important;max-height:none!important;overflow:visible!important;
-  padding:7px!important;pointer-events:auto;max-width:100%}
-#navlist{display:flex;flex-direction:row;flex-wrap:wrap;gap:5px}
-.navitem{min-width:112px;min-height:54px;padding:8px 14px;border-radius:10px;cursor:pointer;
+/* 탭바 — 헤더와 이어지는 전폭 스트립 */
+#panel{position:static!important;width:100%!important;max-width:none!important;max-height:none!important;
+  overflow:visible!important;pointer-events:auto;
+  padding:6px 14px!important;border-radius:0!important;border-left:0!important;border-right:0!important;
+  border-top:0!important;background:rgba(9,12,18,.94)!important;backdrop-filter:blur(10px);
+  box-shadow:0 6px 18px rgba(0,0,0,.35)!important}
+#navlist{display:flex;flex-direction:row;flex-wrap:wrap;gap:4px}
+.navitem{min-width:104px;min-height:48px;padding:6px 14px;border-radius:9px;cursor:pointer;
   display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;
   transition:background .12s;-webkit-user-select:none;user-select:none}
 .navitem:hover{background:rgba(255,255,255,.07)}
 .navitem.on{background:var(--acc)}
-.navitem .nt{font-size:14px;font-weight:700;letter-spacing:.01em;line-height:1.35;word-break:keep-all}
+.navitem .nt{font-size:13.5px;font-weight:700;letter-spacing:.01em;line-height:1.3;word-break:keep-all}
 .navitem.on .nt{color:#180c07}
-.navitem .ns{display:none}   /* 부제는 탭이 아니라 패널 헤더에 둔다 */
+.navitem .ns{display:none}
 
-/* 정보 패널 — 탭 바로 아래 */
-#detail{position:static!important;pointer-events:auto;width:560px;max-width:100%;
-  max-height:calc(100vh - 200px);overflow:auto;
+/* 정보 패널 — 탭바 아래 왼쪽 */
+#detail{position:static!important;pointer-events:auto;margin:10px 0 0 14px;width:560px;max-width:calc(100% - 28px);
+  max-height:calc(100vh - 190px);overflow:auto;
   background:var(--panel);border:1px solid var(--line);border-radius:14px;
   backdrop-filter:blur(10px);box-shadow:0 12px 40px rgba(0,0,0,.5)}
 #detail.hid{display:none}
@@ -325,8 +328,8 @@ renderPop();
 #detail::-webkit-scrollbar-thumb{background:rgba(255,255,255,.18);border-radius:8px}
 
 @media (max-height:820px){#hint{display:none}}
-@media (max-width:1280px){.navitem{min-width:96px;padding:8px 10px}.navitem .nt{font-size:13px}
-  #detail{width:100%}}
+@media (max-width:1280px){.navitem{min-width:92px;padding:6px 10px}.navitem .nt{font-size:12.5px}
+  #detail{width:calc(100% - 28px)}}
 </style>
 <script id="hayday-shell-js">
 /* HAYDAY_SHELL_V4 — 기존 앱 로직 무수정. .sec 를 아래 패널로 옮기고 display 로만 전환한다. */
