@@ -106,10 +106,12 @@ map.addControl(new maplibregl.NavigationControl({visualizePitch:true}),'bottom-r
 map.addControl(new maplibregl.ScaleControl({maxWidth:110,unit:'metric'}),'bottom-right');
 map.addControl(new maplibregl.AttributionControl({compact:true}),'bottom-left');
 
-let ready=false;
-function boot(){if(ready)return;ready=true;
+let ready=false,bootN=0;
+function boot(){if(ready)return;
+  if(!map.isStyleLoaded()){if(bootN++<150)setTimeout(boot,200);return;}
+  ready=true;
   addSources();addLayers();fitTarget();renderShell();selectLayer('bld');}
-map.on('load',boot); setTimeout(boot,1200); setTimeout(boot,3000);
+map.on('load',boot); map.on('styledata',boot); setTimeout(boot,1200); setTimeout(boot,3000);
 map.once('idle',()=>doFit());
 
 function addSources(){
