@@ -1,0 +1,80 @@
+  LT_C_ADEMD_INFO p1 +8 /8
+SAVED adm            8 items     177598 B
+  LT_C_ADSIGG_INFO p1 +1 /1
+SAVED sigg           1 items     106648 B
+TARGET_DONGS ['신평동', '장림동', '다대동']
+폴리곤 42개 중 도서·자잘한 것 37개 제외, 본섬 5개 유지
+BBOX BOX(128.925046,35.031332,129.002411,35.102809)  7.0 x 7.9 km = 55.9 km2
+SAVED bbox           1 items        144 B
+  LT_C_UQ111 p1 +226 /226
+SAVED zon          226 items    1156774 B
+  ! LT_C_SPBD INVALID_RANGE -> 타일분할 (geomFilter 파라미터의 값이 유효한 범위를 넘었습니다. 유효한 파라미터 값의 범위 : polygon, box경우 요청면적이 10km² 이내, 입력한 파라미터 값 : 55.3km²)
+  LT_C_SPBD 타일 8칸
+    tile 1/8 +0 누적 0
+  LT_C_SPBD p1 +1000 /1173
+  LT_C_SPBD p2 +173 /1173
+    tile 2/8 +1173 누적 1173
+  LT_C_SPBD p1 +154 /154
+    tile 3/8 +154 누적 1327
+  LT_C_SPBD p1 +469 /469
+    tile 4/8 +469 누적 1796
+  LT_C_SPBD p1 +1000 /7650
+  LT_C_SPBD p2 +1000 /7650
+  LT_C_SPBD p3 +1000 /7650
+  LT_C_SPBD p4 +1000 /7650
+  LT_C_SPBD p5 +1000 /7650
+  LT_C_SPBD p6 +1000 /7650
+  LT_C_SPBD p7 +1000 /7650
+  LT_C_SPBD p8 +650 /7650
+    tile 5/8 +7569 누적 9365
+  LT_C_SPBD p1 +815 /815
+    tile 6/8 +780 누적 10145
+  LT_C_SPBD p1 +135 /135
+    tile 7/8 +135 누적 10280
+  LT_C_SPBD p1 +1000 /8474
+  LT_C_SPBD p2 +1000 /8474
+  LT_C_SPBD p3 +1000 /8474
+  LT_C_SPBD p4 +1000 /8474
+  LT_C_SPBD p5 +1000 /8474
+  LT_C_SPBD p6 +1000 /8474
+  LT_C_SPBD p7 +1000 /8474
+  LT_C_SPBD p8 +1000 /8474
+  LT_C_SPBD p9 +474 /8474
+    tile 8/8 +8413 누적 18693
+SAVED bld        18693 items   12388747 B
+  ! LP_PA_CBND_BUBUN INVALID_RANGE -> 타일분할 (geomFilter 파라미터의 값이 유효한 범위를 넘었습니다. 유효한 파라미터 값의 범위 : polygon, box경우 요청면적이 10km² 이내, 입력한 파라미터 값 : 55.3km²)
+  LP_PA_CBND_BUBUN 타일 8칸
+  LP_PA_CBND_BUBUN p1 +2 /2
+    tile 1/8 +2 누적 2
+  LP_PA_CBND_BUBUN p1 +1000 /1216
+  LP_PA_CBND_BUBUN p2 +216 /1216
+    tile 2/8 +1215 누적 1217
+  LP_PA_CBND_BUBUN p1 +268 /268
+    tile 3/8 +267 누적 1484
+  LP_PA_CBND_BUBUN p1 +178 /178
+    tile 4/8 +175 누적 1659
+  LP_PA_CBND_BUBUN p1 +1000 /7515
+  LP_PA_CBND_BUBUN p2 +1000 /7515
+  LP_PA_CBND_BUBUN p3 +1000 /7515
+  LP_PA_CBND_BUBUN p4 +1000 /7515
+  LP_PA_CBND_BUBUN p5 +1000 /7515
+  LP_PA_CBND_BUBUN p6 +1000 /7515
+  LP_PA_CBND_BUBUN p7 +1000 /7515
+  LP_PA_CBND_BUBUN p8 +515 /7515
+    tile 5/8 +7396 누적 9055
+  LP_PA_CBND_BUBUN p1 +1000 /1128
+  LP_PA_CBND_BUBUN p2 +128 /1128
+    tile 6/8 +1053 누적 10108
+  LP_PA_CBND_BUBUN p1 +511 /511
+    tile 7/8 +509 누적 10617
+  LP_PA_CBND_BUBUN p1 +1000 /8694
+  LP_PA_CBND_BUBUN p2 +1000 /8694
+  LP_PA_CBND_BUBUN p3 +1000 /8694
+  LP_PA_CBND_BUBUN p4 +1000 /8694
+  LP_PA_CBND_BUBUN p5 +1000 /8694
+  LP_PA_CBND_BUBUN p6 +1000 /8694
+  LP_PA_CBND_BUBUN p7 +1000 /8694
+  LP_PA_CBND_BUBUN p8 +1000 /8694
+  LP_PA_CBND_BUBUN p9 +694 /8694
+    tile 8/8 +8585 누적 19202
+SAVED par        19202 items   15231620 B

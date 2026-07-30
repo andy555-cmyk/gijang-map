@@ -1,0 +1,43 @@
+{
+ "region": "saha",
+ "order": [
+  "BD",
+  "ZONING",
+  "EMD",
+  "EMDV",
+  "SIGG",
+  "SITE",
+  "SITEPAR",
+  "FCT",
+  "IND",
+  "MP"
+ ],
+ "sizes": {
+  "BD": 2846392,
+  "ZONING": 252521,
+  "EMD": 98868,
+  "EMDV": 53144,
+  "SIGG": 59468,
+  "SITE": 44044,
+  "SITEPAR": 157285,
+  "FCT": 73,
+  "IND": 90082,
+  "MP": 581
+ },
+ "stats": {
+  "N": 14531,
+  "MATCH": 0,
+  "YRN": 0,
+  "OLDN": 0,
+  "OLDR": 0.0,
+  "UNZ": 1,
+  "FCT": {
+   "cut": 1996,
+   "old_year": 30,
+   "base_year": 2026,
+   "total": 0,
+   "old": 0,
+   "ratio": 0.0
+  }
+ }
+}

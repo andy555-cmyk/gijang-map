@@ -1,0 +1,50 @@
+CSV 부산광역시_제조업 공장등록현황_251231.csv (cp949)
+전체 11386행
+대상 사하구 신평동/장림동/다대동 -> 1169개 업체
+캐시 0건
+  25/1169  road=24 parcel=0 fail=0 cache=1
+  50/1169  road=49 parcel=0 fail=0 cache=1
+  75/1169  road=73 parcel=0 fail=0 cache=2
+  125/1169  road=118 parcel=0 fail=1 cache=6
+  150/1169  road=142 parcel=1 fail=1 cache=6
+  175/1169  road=165 parcel=1 fail=1 cache=8
+  200/1169  road=182 parcel=2 fail=2 cache=14
+  225/1169  road=202 parcel=3 fail=2 cache=18
+  300/1169  road=261 parcel=3 fail=3 cache=33
+  325/1169  road=279 parcel=3 fail=3 cache=40
+  350/1169  road=301 parcel=3 fail=3 cache=43
+  400/1169  road=335 parcel=3 fail=3 cache=59
+  425/1169  road=354 parcel=5 fail=3 cache=63
+  450/1169  road=372 parcel=5 fail=3 cache=70
+  475/1169  road=393 parcel=5 fail=3 cache=74
+  500/1169  road=411 parcel=5 fail=3 cache=81
+  600/1169  road=480 parcel=5 fail=5 cache=110
+  650/1169  road=515 parcel=7 fail=5 cache=123
+  700/1169  road=549 parcel=7 fail=5 cache=139
+  725/1169  road=567 parcel=8 fail=5 cache=145
+  750/1169  road=583 parcel=8 fail=5 cache=154
+  775/1169  road=597 parcel=9 fail=5 cache=164
+  800/1169  road=610 parcel=9 fail=6 cache=175
+  850/1169  road=630 parcel=10 fail=6 cache=204
+  875/1169  road=645 parcel=10 fail=6 cache=214
+  950/1169  road=684 parcel=10 fail=6 cache=250
+  975/1169  road=696 parcel=10 fail=6 cache=263
+  1075/1169  road=750 parcel=10 fail=7 cache=308
+  1100/1169  road=767 parcel=11 fail=7 cache=315
+  1150/1169  road=794 parcel=11 fail=7 cache=338
+
+지오코딩 성공 1161 / 실패 8 (성공률 99.3%)
+법정동별: {'장림동': 557, '다대동': 261, '신평동': 343}
+업종 상위 10:
+   그                                        130
+   도금업                                      55
+   선박 구성 부분품 제조업                            48
+   기타 수산동물 가공 및 저장 처리업                      47
+   수산동물 훈제, 조리 및 유사 조제식품 제조업                34
+   배전반 및 전기 자동제어반 제조업                       29
+   직물, 편조원단 및 의복류 염색 가공업                    29
+   탭, 밸브 및 유사장치 제조업                         27
+   수산동물 냉동품 제조업                             25
+   절삭가공 및 유사처리업                             20
+-> /Users/iseung-won/dev/gijang-map/build/data/saha/IND.json (90,082 B)
+실패 목록 -> /Users/iseung-won/dev/gijang-map/build/vw/saha/geocode_fail.json

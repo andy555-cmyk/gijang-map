@@ -1,0 +1,8 @@
+TARGETS [('신평동', '26380104', '10400'), ('장림동', '26380105', '10500'), ('다대동', '26380106', '10600')]
+NON_JSON bjd=10400 len=0 body200=''
+EXC
+Traceback (most recent call last):
+  File "/Users/iseung-won/saha_hub.py", line 35, in <module>
+    say("NON_JSON bjd=%s len=%d body200=%r"%(bjd,len(raw),raw[:200])); raise RuntimeError("NON_JSON")
+RuntimeError: NON_JSON
+
