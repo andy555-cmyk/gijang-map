@@ -205,7 +205,7 @@ function chips(items){return items.map(([c,k,v])=>
 const LAYERS={
  bld:{t:'건축물',sub:nf(NB)+'동',
    show:['l-bld','l-site','l-site-o'],hide:['l-zon','l-zon-o','l-fac','l-fac-h'],
-   modes:[['zone','용도지역'],['lv','층수'],['ind','공업지역 내외']],
+   modes:[['zone','용도지역'],['ind','공업지역 내외']],   /* 층수 모드 제외 — 공단지역이라 층수 표현 불필요 (2026-07-31 남실장님 확정) */
    legend(m){
      if(m==='lv')return `<div class="grp">지상 층수</div>
        <div class="ramp"><span>1층</span>
@@ -259,10 +259,10 @@ const LAYERS={
      <div class="row"><span>대상지 내 건물</span><b>${nf(NSITE)}동</b></div>
      <div class="row"><span>대상지 내 필지</span><b>${nf(SITEPAR.length)}필지</b></div>
      <div class="row"><span>개별공시지가 중위</span><b>${JIGA_MED?nf(JIGA_MED)+'원/㎡':'미상'}</b></div>`;},
-   extra:`<div class="note">마스터플랜 사업면적은 <b>${nf(MP.area_m2)}㎡</b>(원문 기준)입니다.
+   extra:`<div class="note">사업 배치도 사업면적은 <b>${nf(MP.area_m2)}㎡</b>(원문 기준)입니다.
       위 폴리곤은 용도지역 기반 근사라 이 수치와 정확히 일치하지 않습니다.</div>`},
 
- mp:{t:'마스터플랜',sub:'A~G '+MP.programs.length+'개',
+ mp:{t:'사업 배치도',sub:'A~G '+MP.programs.length+'개',   /* 명칭 확정: 마스터플랜 → 사업 배치도 (2026-07-31) */
    show:['l-site','l-site-o','l-bld'],hide:['l-zon','l-zon-o','l-fac','l-fac-h'],
    modes:[['list','단위사업']],
    legend(){
