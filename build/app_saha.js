@@ -99,6 +99,31 @@ const EMD_YTH={type:'FeatureCollection',features:EMD_MAIN.features.map(f=>{
   return {type:'Feature',properties:q,geometry:f.geometry};})};
 const YTH_MISS=EMD_YTH.features.filter(f=>!f.properties.has).map(f=>f.properties.n);
 
+/* ── 청년 진단 파생값 ──────────────────────────────────────────
+   전부 원자료(YTH.sigg.b, 연도×5세밴드)에서 계산한다. 상수 하드코딩 금지 —
+   자료가 갱신되면 화면이 따라 바뀌어야 한다. */
+const BI={}; YTH.bands.forEach((b,i)=>BI[b]=i);
+const Y_FIRST=String(YTH.years[0]), Y_LAST=String(YTH.years[YI]);
+/* 65세 이상은 한 칸으로 묶는다 — 13칸 + 1칸 = 14행이 화면에 들어간다 */
+const PBANDS=YTH.bands.slice(0,13).concat([['65세 이상',13,YTH.bands.length]]);
+function bandVal(yr,spec){const b=YTH.sigg.b[yr];
+  if(Array.isArray(spec))return b.slice(spec[1],spec[2]).reduce((a,c)=>a+c,0);
+  return b[BI[spec]];}
+const PYR=PBANDS.map(sp=>{const k=Array.isArray(sp)?sp[0]:sp;
+  const a=bandVal(Y_FIRST,sp), z=bandVal(Y_LAST,sp);
+  return {k:k.replace('세 이상','+').replace('세',''),a:a,z:z,d:a?(z/a-1)*100:0};});
+const PYR_MAX=Math.max(...PYR.map(p=>Math.max(p.a,p.z)));
+
+/* 코호트 잔존율 — 15년 뒤(5세 3칸) 같은 세대가 몇 % 남았나.
+   출생 감소와 유출을 가르는 유일한 방법이다. 100% 미만이면 순유출이다. */
+const COH_FROM=String(YTH.years[2]), COH_TO=Y_LAST, COH_YRS=YTH.years[YI]-YTH.years[2];
+const COH=YTH.bands.slice(2,11).map((k,i)=>{const j=i+2;
+  const a=YTH.sigg.b[COH_FROM][j], z=YTH.sigg.b[COH_TO][j+3];
+  return {k:k,to:YTH.bands[j+3],a:a,z:z,r:a?z/a*100:0};}).filter(c=>c.a>0);
+const COH_MIN=COH.reduce((m,c)=>c.r<m.r?c:m,COH[0]);
+const COH_MAX=COH.reduce((m,c)=>c.r>m.r?c:m,COH[0]);
+
+
 /* ── 집계 ─────────────────────────────────────────────────────── */
 const NB=BD.f.length, NSITE=BD.f.filter(r=>r[3]).length, NIND=IND.f.length;
 const LVN=BD.f.filter(r=>r[0]>0).length;
@@ -116,6 +141,9 @@ const SG=YTH.sigg;
 const SG_R0=+(SG.yth[0]/SG.tot[0]*100).toFixed(2), SG_R1=+(SG.yth[YI]/SG.tot[YI]*100).toFixed(2);
 const SG_O0=+(SG.old[0]/SG.tot[0]*100).toFixed(1), SG_O1=+(SG.old[YI]/SG.tot[YI]*100).toFixed(1);
 const SG_TCHG=+((SG.tot[YI]/SG.tot[0]-1)*100).toFixed(1), SG_YCHG=+((SG.yth[YI]/SG.yth[0]-1)*100).toFixed(1);
+/* 목표 역산 — 첫해 청년 비중을 지금 총인구에 적용하면 몇 명이 모자라나.
+   ⚠ SG_R0 보다 먼저 선언하면 TDZ 로 스크립트 전체가 죽는다(실측). 이 위치를 지켜라. */
+const GOAL_R=SG_R0, GOAL_NEED=Math.round(SG.tot[YI]*GOAL_R/100)-SG.yth[YI];
 const nf=n=>n.toLocaleString('ko-KR');
 
 /* ── 지도 ─────────────────────────────────────────────────────── */
@@ -136,7 +164,7 @@ let ready=false,bootN=0;
 function boot(){if(ready)return;
   if(!map.isStyleLoaded()){if(bootN++<150)setTimeout(boot,200);return;}
   ready=true;
-  addSources();addLayers();fitTarget();renderShell();selectLayer('bld');}
+  addSources();addLayers();fitTarget();renderShell();selectLayer('bld');setFs('m');}
 map.on('load',boot); map.on('styledata',boot); setTimeout(boot,1200); setTimeout(boot,3000);
 map.once('idle',()=>doFit());
 
@@ -235,7 +263,9 @@ function doFit(){
      하드코딩하면 탭이 2줄로 접힐 때 대상지가 스트립 뒤로 들어간다. */
   const sh=document.getElementById('shell'), dt=document.getElementById('detail');
   const shH=(sh?sh.offsetHeight:60)+10;
-  const dtW=(dt&&!dt.classList.contains('fold'))?dt.offsetWidth+24:24;
+  /* ⚠ zoom 을 쓰므로 offsetWidth 가 아니라 getBoundingClientRect 를 봐야 한다.
+     offsetWidth 는 배율 전 값이라 패널 뒤로 대상지가 숨는다. */
+  const dtW=(dt&&!dt.classList.contains('fold'))?dt.getBoundingClientRect().width+24:24;
   map.fitBounds(TGT_BB,{padding:w<960?{top:shH+8,bottom:28,left:10,right:10}
                                     :{top:shH,bottom:30,left:dtW,right:28},duration:0});
   /* ⚠ 줌 보정은 폐기했다. 좌우 분리판(패딩 292/296)에서는 fitBounds 가 보수적이라
@@ -337,6 +367,109 @@ const LAYERS={
       <b>공장별 재직인원·연령대는 공개 통계에 없습니다</b> — 사업체 단위 미시자료라
       발주처·산단관리공단 자료가 있어야 합니다.${YTH_MISS.length?'<br>⚠ 미매칭: '+YTH_MISS.join(', '):''}</div>`},
 
+ diag:{t:'청년 진단',sub:'왜 줄었나 · 어떻게 올리나',
+   show:['l-yth','l-yth-o','l-site-o'],hide:['l-bld','l-zon','l-zon-o','l-fac','l-fac-h'],
+   modes:[['coh','왜 줄었나'],['pyr','연령 구조'],['tr','18년 추이'],['goal','얼마나 필요한가']],
+   legend(m){
+     const q=`<div class="warn2"><b>왜 청년이 머물지 않는가</b> · <b>머물게 하려면</b><br>
+       남실장님이 이 툴에 요구한 두 질문입니다. 이 탭이 앞 질문에 답하고, 뒷 질문의 규모를 잽니다.</div>`;
+     const src=`<div class="note">출처: <b>행정안전부 주민등록인구현황</b>(연말, 5세 단위, ${YTH.years[0]}~${YTH.years[YI]}).
+       모든 수치는 원자료에서 계산한 것이며 추정치가 아닙니다.</div>`;
+
+     if(m==='pyr'){
+       const rows=PYR.map(p=>`<div class="pv">
+          <span class="pl">${p.k}</span>
+          <span class="pb">
+            <i style="width:${p.a/PYR_MAX*100}%;background:#4b5563"></i>
+            <i style="width:${p.z/PYR_MAX*100}%;background:${p.d<0?'#d95926':'#3987e5'}"></i>
+          </span>
+          <span class="pd" style="color:${p.d<0?'#f0a882':'#7fd4ff'}">${p.d>0?'+':''}${p.d.toFixed(0)}%</span>
+        </div>`).join('');
+       return `<div class="grp">연령 구조 ${YTH.years[0]} → ${YTH.years[YI]}</div>
+         <div class="lg"><s><i style="background:#4b5563"></i>${YTH.years[0]}</s>
+           <s><i style="background:#d95926"></i>${YTH.years[YI]} (감소)</s>
+           <s><i style="background:#3987e5"></i>${YTH.years[YI]} (증가)</s></div>
+         ${rows}
+         <div class="note"><b>모든 연령대가 준 게 아닙니다.</b> 55세 위로는 늘었고,
+           50세 아래는 전부 줄었습니다. <b>0~4세가 ${PYR[0].d.toFixed(0)}%</b> 로 가장 크게 빠졌습니다 —
+           청년이 빠진 자리에 <b>다음 세대가 태어나지 않은</b> 것입니다.</div>${q}${src}`;
+     }
+
+     if(m==='tr'){
+       const rs=SG.yth.map((v,i)=>v/SG.tot[i]*100), os=SG.old.map((v,i)=>v/SG.tot[i]*100);
+       const bar=(arr,c,hi)=>arr.map((v,i)=>
+         `<i title="${YTH.years[i]}년 ${v.toFixed(2)}%" style="height:${v/Math.max(...arr)*100}%;background:${i===arr.length-1?hi:c}"></i>`).join('');
+       return `<div class="grp">청년(20~34세) 비중 18년</div>
+         <div class="trend">${bar(rs,'#3987e5','#f0a882')}</div>
+         <div class="tx"><span>${YTH.years[0]} · ${SG_R0}%</span><span>${YTH.years[YI]} · ${SG_R1}%</span></div>
+         <div class="grp">고령(65세+) 비중 18년</div>
+         <div class="trend">${bar(os,'#c98500','#f0a882')}</div>
+         <div class="tx"><span>${YTH.years[0]} · ${SG_O0}%</span><span>${YTH.years[YI]} · ${SG_O1}%</span></div>
+         <div class="kbig">
+           <div><span>청년 비중</span><b class="dn">${SG_R0}→${SG_R1}<em>%</em></b></div>
+           <div><span>고령 비중</span><b class="up">${SG_O0}→${SG_O1}<em>%</em></b></div>
+           <div><span>교차 시점</span><b>${(()=>{for(let i=0;i<rs.length;i++)if(os[i]>rs[i])return YTH.years[i];return '아직';})()}<em>년</em></b></div>
+         </div>
+         <div class="note">막대는 매년 실측값입니다. <b>고령 비중이 청년 비중을 추월한 해</b>가
+           위 세 번째 칸입니다. 한 번 교차하면 되돌아온 사례가 드뭅니다 — 다만 이는 일반론이며
+           사하구에 대한 예측이 아닙니다.</div>${q}${src}`;
+     }
+
+     if(m==='goal'){
+       /* ⚠ '청년과 닿는 사업'을 예산순 상위로 뽑으면 사실과 다르다.
+          이름에 '청년'이 든 사업만 청년 사업으로 표시하고 나머지는 그대로 둔다. */
+       const prog=MP.programs.slice().sort((a,b)=>b.b-a.b);
+       const isY=n=>/청년/.test(n);
+       const yb=MP.programs.filter(p=>isY(p.n)).reduce((a,c)=>a+c.b,0);
+       return `<div class="grp">${YTH.years[0]}년 수준(${GOAL_R}%)으로 되돌리려면</div>
+         <div class="gap">
+           <div class="gt">지금 총인구 ${nf(SG.tot[YI])}명 기준</div>
+           <div class="gn">청년 ${nf(GOAL_NEED)}명 부족</div>
+           <div class="gs">현재 청년 ${nf(SG.yth[YI])}명 → 필요 ${nf(SG.yth[YI]+GOAL_NEED)}명.
+             이 숫자는 <b>서부산스마트밸리 고용인원 ${nf(MP.employees)}명의 ${(GOAL_NEED/MP.employees).toFixed(1)}배</b>입니다.
+             산단 고용만으로는 메울 수 없는 규모라는 뜻입니다.</div>
+         </div>
+         <div class="kbig">
+           <div><span>현재 청년</span><b>${nf(SG.yth[YI])}<em>명</em></b></div>
+           <div><span>부족분</span><b class="dn">${nf(GOAL_NEED)}<em>명</em></b></div>
+           <div><span>입주업체</span><b>${nf(MP.firms)}<em>개</em></b></div>
+         </div>
+         <div class="grp">사업 배치도 단위사업 · 사업비순</div>
+         ${prog.map(p=>`<div class="row"><i style="background:${isY(p.n)?'#3987e5':'#4b5563'}"></i>
+            <span>${p.c}. ${p.n}${isY(p.n)?' <b style="color:#7fd4ff">청년</b>':''}</span>
+            <b>${(p.b/100).toLocaleString('ko-KR')}억</b></div>`).join('')}
+         <div class="row tot"><span>이름에 「청년」이 든 사업 합계</span>
+           <b>${(yb/100).toLocaleString('ko-KR')}억 / ${MP.budget_eok.toLocaleString('ko-KR')}억
+           (${(yb/100/MP.budget_eok*100).toFixed(1)}%)</b></div>
+         <div class="warn"><b>여기서부터는 데이터가 답을 주지 않습니다.</b>
+           위 숫자는 <b>목표의 크기</b>일 뿐이고, 어떤 사업이 청년을 몇 명 붙잡는지는
+           공개 통계로 계산할 수 없습니다. 발주처의 워크숍 결과·입주기업 채용계획이 있어야
+           연결이 가능합니다.</div>${q}`;
+     }
+
+     const mx=Math.max(...COH.map(c=>c.r));
+     return `<div class="grp">코호트 잔존율 · ${COH_FROM} → ${COH_TO} (${COH_YRS}년)</div>
+       <div class="lg"><s>같은 세대가 ${COH_YRS}년 뒤 사하구에 몇 % 남았는가</s></div>
+       ${COH.map(c=>`<div class="pv">
+          <span class="pl">${c.k.replace('세','')}</span>
+          <span class="pb"><i style="width:${c.r/mx*100}%;background:${c.r<70?'#d95926':(c.r<80?'#c98500':'#3987e5')}"></i></span>
+          <span class="pd">${c.r.toFixed(1)}%</span>
+        </div>`).join('')}
+       <div class="kbig">
+         <div><span>가장 많이 빠진 세대</span><b class="dn">${COH_MIN.k.replace('세','')}<em>세</em></b></div>
+         <div><span>그 세대 잔존율</span><b class="dn">${COH_MIN.r.toFixed(1)}<em>%</em></b></div>
+         <div><span>가장 많이 남은 세대</span><b>${COH_MAX.k.replace('세','')}세 ${COH_MAX.r.toFixed(1)}<em>%</em></b></div>
+       </div>
+       <div class="warn"><b>이게 "왜 줄었나"의 답입니다.</b>
+         ${COH_MAX.k}는 ${COH_MAX.r.toFixed(0)}% 가 남는데,
+         <b>${COH_MIN.k}는 ${COH_MIN.r.toFixed(1)}% 만 남습니다.</b>
+         고령화 때문에 청년이 준 게 아니라, <b>사회에 나가는 나이에 사하구를 떠납니다.</b>
+         빠지는 지점이 특정 연령대에 몰려 있다는 것은 개입 지점도 거기라는 뜻입니다.</div>
+       <div class="note">잔존율은 전입·전출·사망을 모두 합친 순변화입니다.
+         이 연령대에서 사망은 무시할 수준이므로 <b>사실상 순유출</b>로 읽습니다.
+         다만 유출의 <b>사유</b>(취업·진학·주거)는 이 자료로 구분되지 않습니다 — 확인 필요.</div>${q}${src}`;},
+   extra:''},
+
  zon:{t:'용도지역',sub:nf(ZONING.features.length)+'구역',
    show:['l-zon','l-zon-o','l-site-o'],hide:['l-bld','l-fac','l-fac-h','l-yth','l-yth-o'],
    modes:[['all','전체'],['ind','공업계열만']],
@@ -394,6 +527,8 @@ function renderLayer(k){
   if(!curMode[k])curMode[k]=L.modes[0][0];
   document.getElementById('vhead').innerHTML=
     `<div class="vt">${L.t}</div><div class="vs">${L.sub}</div>
+     <div id="fsz"><b>글자</b>${FSZ.map(([k,t])=>
+        `<button class="fsb ${curFs===k?'on':''}" onclick="setFs('${k}')">${t}</button>`).join('')}</div>
      <button class="fold" onclick="toggleFold()">▲ 접기</button>`;
   document.getElementById('vmode').innerHTML=L.modes.length>1
     ? L.modes.map(([v,t])=>`<button class="mode ${curMode[k]===v?'on':''}" onclick="setMode('${v}')">${t}</button>`).join('')
@@ -416,13 +551,22 @@ function applyMode(){
     map.setFilter('l-zon',f);map.setFilter('l-zon-o',f);
   }
 }
+const FSZ=[['s','작게'],['m','보통'],['l','크게']];
+let curFs='m';
+function setFs(k){
+  curFs=k;
+  const d=document.getElementById('detail');if(!d)return;
+  FSZ.forEach(([kk])=>d.classList.toggle('fs-'+kk,kk===k));
+  d.querySelectorAll('.fsb').forEach((b,i)=>b.classList.toggle('on',FSZ[i][0]===k));
+  setTimeout(doFit,200);
+}
 function toggleFold(){
   const d=document.getElementById('detail');if(!d)return;
   d.classList.toggle('fold');
   const b=d.querySelector('.fold');if(b)b.textContent=d.classList.contains('fold')?'▼ 펼치기':'▲ 접기';
   setTimeout(doFit,180);
 }
-window.setMode=setMode;window.selectLayer=selectLayer;window.toggleFold=toggleFold;
+window.setMode=setMode;window.selectLayer=selectLayer;window.toggleFold=toggleFold;window.setFs=setFs;
 
 function renderShell(){
   document.getElementById('vkpi').innerHTML=[
