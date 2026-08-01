@@ -691,7 +691,7 @@ function buildVac(){const mx=Math.max(...VAC.map(r=>r[4]));
      지도를 밀어냈다(실측). 지도를 보라고 만든 도구다 — 그건 실패다.
      → 실제로 그려질 패널 폭을 화면 폭 대비 비율로 고정하고 CSS 폭을 배율로 나눠 넣는다.
      🔴 read_page 의 Viewport(2400×1091)는 CSS 픽셀이 아니다. window.innerWidth(1908)로만 계산한다. */
-  var BASE={s:1.15,m:1.45,l:1.80}, PW={s:0.34,m:0.38,l:0.43}, cur='m';
+  var BASE={s:1.15,m:1.45,l:1.80}, PW={s:0.34,m:0.38,l:0.43}, cur='s';
   function k(){return Math.min(1.5,Math.max(1,(window.innerWidth||1440)/1900));}
   /* 패널이 커진 만큼 지도 중심을 오른쪽으로 민다.
      ⚠ 서구·기장 앱의 map 은 window 속성이 아니지만 같은 전역 스코프라 이름으로 접근된다(실측). */
@@ -736,7 +736,7 @@ function buildVac(){const mx=Math.max(...VAC.map(r=>r[4]));
         setTimeout(nudge,320);},true);
     window.addEventListener('resize',function(){clearTimeout(window.__fsrz);
       window.__fsrz=setTimeout(function(){apply(cur);},240);});
-    apply('m');
+    apply('s');   /* 진입 기본값 = 작게 (대표 지시 08-01) */
     setTimeout(nudge,1500); setTimeout(nudge,3200);
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){mount(0);});
