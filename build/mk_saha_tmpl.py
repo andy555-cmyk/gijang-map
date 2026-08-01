@@ -110,6 +110,8 @@ html,body{margin:0;height:100%;background:var(--page);color:var(--ink);overflow:
 .fold:hover{color:var(--ink);border-color:var(--line2)}
 #vkpi{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;padding:13px 18px;
   border-bottom:1px solid var(--line)}
+/* 글자를 키우면 CSS 폭이 좁아진다(폭 고정·배율 분리 구조). 5칸이 터지기 전에 3칸으로 접는다. */
+#detail.nk #vkpi{grid-template-columns:repeat(3,1fr);row-gap:11px}
 .k span{display:block;font-size:11.5px;color:var(--ink3);margin-bottom:3px}
 .k b{font:800 22px/1.15 inherit;letter-spacing:-.7px;font-variant-numeric:tabular-nums}
 .k b em{font-style:normal;font-size:11.5px;font-weight:500;color:var(--ink3);margin-left:2px}

@@ -160,9 +160,14 @@ map.addControl(new maplibregl.NavigationControl({visualizePitch:true}),'bottom-r
 map.addControl(new maplibregl.ScaleControl({maxWidth:110,unit:'metric'}),'bottom-right');
 map.addControl(new maplibregl.AttributionControl({compact:true}),'bottom-left');
 
-let ready=false,bootN=0;
+let ready=false,bootT=0;
+/* 🔴 재시도 한도를 '횟수'로 두면 안 된다.
+   load·styledata·타이머 4개 체인이 같은 카운터를 같이 깎아서, 회선이 느리면
+   스타일이 로드되기 전에 150회가 소진되고 앱이 영영 안 뜬다(2026-08-01 실측: 헤드리스 16초).
+   시간 기준(60초)으로 두면 체인이 몇 개든 안전하다. */
 function boot(){if(ready)return;
-  if(!map.isStyleLoaded()){if(bootN++<150)setTimeout(boot,200);return;}
+  if(!map.isStyleLoaded()){if(!bootT)bootT=+new Date();
+    if(+new Date()-bootT<60000)setTimeout(boot,200);return;}
   ready=true;
   addSources();addLayers();fitTarget();renderShell();selectLayer('bld');setFs('m');}
 map.on('load',boot); map.on('styledata',boot); setTimeout(boot,1200); setTimeout(boot,3000);
@@ -553,16 +558,26 @@ function applyMode(){
 }
 const FSZ=[['s','작게'],['m','보통'],['l','크게']];
 let curFs='m';
-const FSBASE={s:1.0,m:1.24,l:1.55};
-/* ★ 배율은 화면 폭에 비례한다.
-   1440px 에서 맞춘 크기를 2400px 모니터에 그대로 쓰면 60% 로 줄어 보인다(실측 2026-08-01).
-   지자체 고위직이 회의실 대형 화면으로 본다 — 넓은 화면일수록 더 키워야 한다. */
-function fsScale(){return Math.min(2.0,Math.max(1,(window.innerWidth||1440)/1440));}
+/* ★ 글자 크기와 패널 폭을 분리한다 (2026-08-01 재수정).
+   zoom 은 글자만이 아니라 폭까지 같이 키운다. 배율만 올렸더니 「보통」에서
+   패널이 화면의 61% 를 먹고 지도를 밀어냈다(실측). 지도를 보라고 만든 도구다 — 그건 실패다.
+   → 화면에 실제로 그려지는 패널 폭을 화면 폭 대비 비율로 고정하고,
+     CSS 폭을 배율로 나눠 넣는다. 그러면 글자만 커지고 패널은 제자리에 있는다.
+   🔴 read_page 가 보고하는 Viewport(2400×1091)는 CSS 픽셀이 아니다.
+      앱이 실제로 읽는 window.innerWidth 는 1908 이었다. 반드시 innerWidth 로만 계산한다. */
+const FSBASE={s:1.15,m:1.45,l:1.80};   /* 본문 14.5px → 16.7 / 21 / 26px */
+const FSPW  ={s:0.34,m:0.38,l:0.43};   /* 화면 폭 대비 패널 실폭 */
+function fsScale(){return Math.min(1.5,Math.max(1,(window.innerWidth||1440)/1900));}
 function setFs(k){
   curFs=k;
   const d=document.getElementById('detail');if(!d)return;
-  const z=+(FSBASE[k]*fsScale()).toFixed(3);
+  const iw=window.innerWidth||1440, narrow=iw<960;
+  const z=narrow?1:+(FSBASE[k]*fsScale()).toFixed(3);
+  const pw=Math.max(560,Math.min(1100,Math.round(iw*FSPW[k])));
+  const cw=Math.round(pw/z);
   d.style.zoom=z;
+  d.style.width=narrow?'':cw+'px';
+  d.classList.toggle('nk',!narrow&&cw<560);   /* 좁아지면 KPI 5칸 → 3칸 */
   d.style.maxHeight='calc((100vh - 118px)/'+z+')';
   const nv=document.getElementById('navlist'); if(nv)nv.style.zoom=+(1+(z-1)*0.62).toFixed(3);
   d.querySelectorAll('.fsb').forEach((b,i)=>b.classList.toggle('on',FSZ[i][0]===k));
