@@ -416,4 +416,45 @@ renderPop();
   else build();
 })();
 </script>
+
+<style id="hayday-fs-css">
+/* ── HAYDAY_FONTSIZE_V1 (2026-08-01, 대표 지시) ────────────────────────
+   ① 왼쪽 패널을 과감하게 키운다  ② 글자 크기 3단계
+   기존 hayday-shell-css / hayday-shell-js 는 건드리지 않는다. 이 블록만 통째로 치환하면 된다.
+   크기는 zoom 으로 준다 — px 를 단계마다 다시 쓰면 유지가 안 되고 transform:scale 은 스크롤이 깨진다.
+   ⚠ zoom 을 쓰면 max-height 도 배율로 나눠야 패널이 화면 밖으로 나간다. */
+#detail{width:640px!important;max-width:calc(100% - 28px)!important}
+#detail.fs-s{zoom:1;max-height:calc(100vh - 190px)!important}
+#detail.fs-m{zoom:1.16;max-height:calc((100vh - 190px)/1.16)!important}
+#detail.fs-l{zoom:1.36;max-height:calc((100vh - 190px)/1.36)!important}
+#fsz{flex:none;display:flex;gap:3px;align-items:center;margin-right:2px}
+#fsz>b{font:600 10px/1 inherit;opacity:.6;margin-right:3px;letter-spacing:.06em}
+#fsz button{cursor:pointer;border:1px solid var(--line);border-radius:7px;background:transparent;
+  color:var(--sub);font:700 11.5px/1 inherit;padding:6px 9px;transition:.12s}
+#fsz button:hover{background:rgba(255,255,255,.08);color:var(--ink)}
+#fsz button.on{background:var(--acc);border-color:var(--acc);color:#180c07}
+</style>
+<script id="hayday-fs-js">
+(function(){
+  var LV=[['s','작게'],['m','보통'],['l','크게']], cur='m';
+  function apply(k){cur=k;var d=document.getElementById('detail');if(!d)return;
+    LV.forEach(function(x){d.classList.toggle('fs-'+x[0],x[0]===k);});
+    var bs=d.querySelectorAll('#fsz button');
+    for(var i=0;i<bs.length;i++)bs[i].classList.toggle('on',LV[i][0]===k);}
+  function mount(n){
+    var h=document.getElementById('detail-h'), c=document.getElementById('detail-close');
+    if(!h){if((n||0)<60)return setTimeout(function(){mount((n||0)+1);},250);return;}
+    if(document.getElementById('fsz'))return;
+    var w=document.createElement('div');w.id='fsz';
+    w.innerHTML='<b>글자</b>'+LV.map(function(x){
+      return '<button type="button" data-k="'+x[0]+'">'+x[1]+'</button>';}).join('');
+    w.addEventListener('click',function(e){var k=e.target&&e.target.getAttribute('data-k');
+      if(k){e.stopPropagation();apply(k);}});
+    if(c)h.insertBefore(w,c);else h.appendChild(w);
+    apply('m');
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){mount(0);});
+  else mount(0);
+})();
+</script>
 </body></html>
