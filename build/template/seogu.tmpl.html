@@ -651,7 +651,9 @@ function buildVac(){const mx=Math.max(...VAC.map(r=>r[4]));
    기존 hayday-shell-css / hayday-shell-js 는 건드리지 않는다. 이 블록만 통째로 치환하면 된다.
    크기 3단계는 zoom 으로 준다 — px 를 단계마다 다시 쓰면 유지가 안 되고 transform:scale 은 스크롤이 깨진다.
    ⚠ zoom 을 쓰면 max-height 도 배율로 나눠야 패널이 화면 밖으로 나간다. */
-#detail{width:700px!important;max-width:calc(100% - 28px)!important}
+#detail{max-width:calc(100% - 28px)!important}
+/* 폭은 JS 가 인라인으로 넣는다 — 배율과 분리한다(아래 주석). */
+#detail.nk .stat,#detail.nk .distrow,#detail.nk .legrow{flex-wrap:wrap}
 /* 배율은 JS 가 인라인으로 넣는다 — 화면 폭에 비례해야 한다.
    1440px 기준 크기를 2400px 모니터에 그대로 쓰면 60% 로 작아 보인다(실측). */
 
@@ -683,9 +685,14 @@ function buildVac(){const mx=Math.max(...VAC.map(r=>r[4]));
 </style>
 <script id="hayday-fs-js">
 (function(){
-  var LV=[['s','작게'],['m','보통'],['l','크게']], BASE={s:1.0,m:1.24,l:1.55}, cur='m';
-  /* ★ 배율은 화면 폭에 비례한다. 지자체 고위직이 대형 화면으로 본다 — 넓을수록 더 키운다. */
-  function k(){return Math.min(2.0,Math.max(1,(window.innerWidth||1440)/1440));}
+  var LV=[['s','작게'],['m','보통'],['l','크게']];
+  /* ★ 글자 크기와 패널 폭을 분리한다 (2026-08-01 재수정).
+     zoom 은 폭까지 같이 키운다. 배율만 올렸더니 「보통」에서 패널이 화면의 61% 를 먹고
+     지도를 밀어냈다(실측). 지도를 보라고 만든 도구다 — 그건 실패다.
+     → 실제로 그려질 패널 폭을 화면 폭 대비 비율로 고정하고 CSS 폭을 배율로 나눠 넣는다.
+     🔴 read_page 의 Viewport(2400×1091)는 CSS 픽셀이 아니다. window.innerWidth(1908)로만 계산한다. */
+  var BASE={s:1.15,m:1.45,l:1.80}, PW={s:0.34,m:0.38,l:0.43}, cur='m';
+  function k(){return Math.min(1.5,Math.max(1,(window.innerWidth||1440)/1900));}
   /* 패널이 커진 만큼 지도 중심을 오른쪽으로 민다.
      ⚠ 서구·기장 앱의 map 은 window 속성이 아니지만 같은 전역 스코프라 이름으로 접근된다(실측). */
   function nudge(){
@@ -700,8 +707,14 @@ function buildVac(){const mx=Math.max(...VAC.map(r=>r[4]));
     }catch(e){}
   }
   function apply(lv){cur=lv;var d=document.getElementById('detail');if(!d)return;
-    var z=+(BASE[lv]*k()).toFixed(3);
+    var iw=window.innerWidth||1440, narrow=iw<960;
+    var z=narrow?1:+(BASE[lv]*k()).toFixed(3);
+    var pw=Math.max(560,Math.min(1100,Math.round(iw*PW[lv])));
+    var cw=Math.round(pw/z);
     d.style.zoom=z;
+    if(narrow)d.style.removeProperty('width');
+    else d.style.setProperty('width',cw+'px','important');
+    d.classList.toggle('nk',!narrow&&cw<560);
     d.style.maxHeight='calc((100vh - 190px)/'+z+')';
     var nv=document.getElementById('navlist');
     if(nv)nv.style.zoom=(1+(z-1)*0.62).toFixed(3);
