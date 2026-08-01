@@ -93,9 +93,8 @@ html,body{margin:0;height:100%;background:var(--page);color:var(--ink);overflow:
 #detail{pointer-events:auto;flex:0 1 auto;min-height:0;width:700px;max-width:calc(100% - 24px);
   margin:10px 0 12px 12px;background:var(--surf);border:1px solid var(--line);border-radius:12px;
   box-shadow:0 12px 38px rgba(0,0,0,.6);display:flex;flex-direction:column;overflow:hidden}
-#detail.fs-s{zoom:1}
-#detail.fs-m{zoom:1.22}
-#detail.fs-l{zoom:1.5}
+/* 배율은 JS 가 인라인으로 넣는다 — 화면 폭에 비례해야 하기 때문이다(§ setFs).
+   2400px 모니터에서 1440px 기준 크기를 쓰면 그대로 60% 로 작아 보인다(실측). */
 #fsz{position:absolute;right:112px;top:14px;display:flex;gap:3px;align-items:center}
 #fsz b{font:700 11.5px/1 inherit;color:var(--ink3);margin-right:3px;letter-spacing:.06em}
 .fsb{background:var(--surf2);border:1px solid var(--line);color:var(--ink3);border-radius:7px;

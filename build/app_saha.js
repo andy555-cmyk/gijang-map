@@ -553,13 +553,23 @@ function applyMode(){
 }
 const FSZ=[['s','작게'],['m','보통'],['l','크게']];
 let curFs='m';
+const FSBASE={s:1.0,m:1.24,l:1.55};
+/* ★ 배율은 화면 폭에 비례한다.
+   1440px 에서 맞춘 크기를 2400px 모니터에 그대로 쓰면 60% 로 줄어 보인다(실측 2026-08-01).
+   지자체 고위직이 회의실 대형 화면으로 본다 — 넓은 화면일수록 더 키워야 한다. */
+function fsScale(){return Math.min(2.0,Math.max(1,(window.innerWidth||1440)/1440));}
 function setFs(k){
   curFs=k;
   const d=document.getElementById('detail');if(!d)return;
-  FSZ.forEach(([kk])=>d.classList.toggle('fs-'+kk,kk===k));
+  const z=+(FSBASE[k]*fsScale()).toFixed(3);
+  d.style.zoom=z;
+  d.style.maxHeight='calc((100vh - 118px)/'+z+')';
+  const nv=document.getElementById('navlist'); if(nv)nv.style.zoom=+(1+(z-1)*0.62).toFixed(3);
   d.querySelectorAll('.fsb').forEach((b,i)=>b.classList.toggle('on',FSZ[i][0]===k));
-  setTimeout(doFit,200);
+  setTimeout(doFit,220);
 }
+window.addEventListener('resize',()=>{clearTimeout(window.__fsz);
+  window.__fsz=setTimeout(()=>setFs(curFs),260);});
 function toggleFold(){
   const d=document.getElementById('detail');if(!d)return;
   d.classList.toggle('fold');
