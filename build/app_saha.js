@@ -169,7 +169,7 @@ function boot(){if(ready)return;
   if(!map.isStyleLoaded()){if(!bootT)bootT=+new Date();
     if(+new Date()-bootT<60000)setTimeout(boot,200);return;}
   ready=true;
-  addSources();addLayers();fitTarget();renderShell();selectLayer('bld');setFs('m');}
+  addSources();addLayers();fitTarget();renderShell();selectLayer('bld');setFs('s');}
 map.on('load',boot); map.on('styledata',boot); setTimeout(boot,1200); setTimeout(boot,3000);
 map.once('idle',()=>doFit());
 
@@ -557,7 +557,7 @@ function applyMode(){
   }
 }
 const FSZ=[['s','작게'],['m','보통'],['l','크게']];
-let curFs='m';
+let curFs='s';   /* 진입 기본값 = 작게 (대표 지시 08-01) */
 /* ★ 글자 크기와 패널 폭을 분리한다 (2026-08-01 재수정).
    zoom 은 글자만이 아니라 폭까지 같이 키운다. 배율만 올렸더니 「보통」에서
    패널이 화면의 61% 를 먹고 지도를 밀어냈다(실측). 지도를 보라고 만든 도구다 — 그건 실패다.
