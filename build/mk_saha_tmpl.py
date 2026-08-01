@@ -68,40 +68,46 @@ html,body{margin:0;height:100%;background:var(--page);color:var(--ink);overflow:
   padding:5px 10px;font:600 11.5px/1 inherit;cursor:pointer}
 .vbtn:hover{color:var(--ink);border-color:var(--line2)}
 
-/* ── 좌: 레이어 선택창 (남실장님 2026-07-27 지시 — 좌우 분리) ── */
-#left{position:absolute;left:12px;top:56px;width:268px;z-index:10;display:flex;flex-direction:column;gap:9px;
-  max-height:calc(100% - 68px)}
-.card{background:var(--surf);border:1px solid var(--line);border-radius:11px;
-  box-shadow:0 10px 34px rgba(0,0,0,.55)}
-.chd{font:700 10px/1 inherit;letter-spacing:.1em;color:var(--ink3);padding:11px 13px 0}
-#kpi{display:grid;grid-template-columns:1fr 1fr;gap:1px;padding:9px 13px 12px}
-.k{padding:4px 0}
-.k span{display:block;font-size:10.5px;color:var(--ink3);margin-bottom:1px}
-.k b{font:700 17px/1.15 inherit;letter-spacing:-.5px;font-variant-numeric:tabular-nums}
-.k b em{font-style:normal;font-size:10.5px;font-weight:500;color:var(--ink3);margin-left:2px}
-#lbox{display:flex;flex-direction:column;gap:0;padding:6px}
-.lb{display:flex;align-items:baseline;gap:7px;width:100%;background:none;border:0;color:var(--ink2);
-  border-radius:8px;padding:9px 11px;cursor:pointer;text-align:left;font-family:inherit;transition:.12s}
-.lb:hover{background:var(--surf2);color:var(--ink)}
-.lb span{font:600 13px/1 inherit}
-.lb em{font-style:normal;font-size:10.5px;color:var(--ink3);margin-left:auto}
-.lb.on{background:var(--acc);color:#fff}
-.lb.on em{color:rgba(255,255,255,.82)}
+/* ── HAYDAY_SHELL_V5 — 헤더 아래 전폭 가로 탭 + 왼쪽 상세 패널 ──────
+   기장·서구와 같은 레이아웃이다(대표 지시 2026-08-01). 좌우 분리판은 폐기했다.
+   #shellwrap 이 화면을 덮지만 pointer-events:none 이라 지도 조작을 막지 않는다.
+   자식만 auto 로 되살린다 — 이 두 줄을 지우면 지도가 안 눌린다. */
+#shellwrap{position:absolute;top:44px;left:0;right:0;bottom:0;z-index:15;
+  pointer-events:none;display:flex;flex-direction:column;align-items:flex-start}
+#shell{pointer-events:auto;flex:0 0 auto;align-self:stretch;background:rgba(9,12,18,.94);
+  border-bottom:1px solid var(--line);backdrop-filter:blur(6px)}
+#navlist{display:flex;flex-wrap:wrap;padding:0 6px}
+.navitem{min-width:104px;min-height:48px;display:flex;flex-direction:column;justify-content:center;
+  gap:2px;padding:7px 14px;margin:6px 3px;background:none;border:0;border-radius:9px;
+  color:var(--ink3);cursor:pointer;font-family:inherit;text-align:left;transition:.12s}
+.navitem:hover{background:var(--surf2);color:var(--ink)}
+.navitem.on{background:var(--acc);color:#fff}
+.navitem .nt{font:700 13.5px/1.25 inherit;letter-spacing:-.2px;white-space:pre-line}
+.navitem .ns{font-size:10.5px;opacity:.82}
+.navitem.on .ns{color:rgba(255,255,255,.86)}
 
-/* ── 우: 값 표시창 ───────────────────────────────────── */
-#right{position:absolute;right:12px;top:56px;bottom:12px;width:284px;z-index:10;
-  background:var(--surf);border:1px solid var(--line);border-radius:11px;
-  box-shadow:0 10px 34px rgba(0,0,0,.55);display:flex;flex-direction:column;overflow:hidden}
-#vhead{padding:12px 14px 10px;border-bottom:1px solid var(--line)}
+#detail{pointer-events:auto;flex:0 1 auto;min-height:0;width:560px;max-width:calc(100% - 24px);
+  margin:10px 0 12px 12px;background:var(--surf);border:1px solid var(--line);border-radius:12px;
+  box-shadow:0 12px 38px rgba(0,0,0,.6);display:flex;flex-direction:column;overflow:hidden}
+#detail.fold #vmode,#detail.fold #vbody{display:none}
+#vhead{position:relative;padding:12px 14px 10px;border-bottom:1px solid var(--line)}
 .vt{font:700 15px/1.2 inherit;letter-spacing:-.3px}
 .vs{font-size:11.5px;color:var(--ink3);margin-top:2px}
+.fold{position:absolute;right:12px;top:11px;background:var(--surf2);border:1px solid var(--line);
+  color:var(--ink3);border-radius:7px;padding:5px 10px;font:600 11px/1 inherit;cursor:pointer}
+.fold:hover{color:var(--ink);border-color:var(--line2)}
+#vkpi{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;padding:10px 14px;
+  border-bottom:1px solid var(--line)}
+.k span{display:block;font-size:10px;color:var(--ink3);margin-bottom:1px}
+.k b{font:700 16px/1.15 inherit;letter-spacing:-.5px;font-variant-numeric:tabular-nums}
+.k b em{font-style:normal;font-size:10px;font-weight:500;color:var(--ink3);margin-left:2px}
 #vmode{display:flex;gap:5px;padding:10px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}
 .mode{background:var(--surf2);border:1px solid var(--line);color:var(--ink3);border-radius:7px;
   padding:5px 10px;font:600 11.5px/1 inherit;cursor:pointer}
 .mode:hover{color:var(--ink)}
 .mode.on{background:var(--acc);border-color:var(--acc);color:#fff}
 .onemode{font-size:11.5px;color:var(--ink3)}
-#vbody{padding:2px 14px 16px;overflow-y:auto;flex:1;scrollbar-width:thin}
+#vbody{padding:2px 14px 16px;overflow-y:auto;flex:1;min-height:0;scrollbar-width:thin}
 #vbody::-webkit-scrollbar{width:8px}
 #vbody::-webkit-scrollbar-thumb{background:#333640;border-radius:4px}
 #vbody::-webkit-scrollbar-track{background:transparent}
@@ -127,6 +133,13 @@ html,body{margin:0;height:100%;background:var(--page);color:var(--ink);overflow:
 .note{background:#161a20;border-left:2px solid var(--line2);color:#9aa5b2}
 .warn{background:#241a13;border-left:2px solid var(--acc);color:#e3b795}
 .note b,.warn b{color:var(--ink)}
+/* 목표 질문 배너 — 이 레이어가 무엇에 답하려는 것인지 화면에 남긴다 (07-31 남실장님 [L253][L255]) */
+.warn2{margin-top:12px;padding:10px;border-radius:7px;font-size:11.5px;line-height:1.65;
+  background:#0f1c26;border:1px solid #1d3a4d;color:#9fd0e8}
+.warn2 b{color:#7fd4ff;font-weight:800}
+/* 스파크라인 — 18년 청년 비중 추이. 축·눈금 없이 형태만 읽힌다 */
+.spark{display:flex;align-items:flex-end;gap:2px;height:32px;margin:7px 0 5px}
+.spark i{flex:1;border-radius:1px;opacity:.9}
 
 /* 팝업 */
 .maplibregl-popup-content{background:var(--surf);color:var(--ink2);border:1px solid var(--line2);
@@ -139,16 +152,11 @@ html,body{margin:0;height:100%;background:var(--page);color:var(--ink);overflow:
 .pp .pg i{width:9px;height:9px;border-radius:3px}
 .pp .na,.na{color:var(--ink3);font-weight:500}
 
-#foot{position:absolute;left:12px;bottom:12px;width:268px;z-index:9;font-size:9.5px;
-  color:#6b7280;line-height:1.55;padding:0 3px}
 @media (max-width:960px){
-  #map{inset:44px 0 0}
-  #left,#right{position:absolute;left:8px;right:8px;width:auto}
-  #left{top:52px;flex-direction:row;overflow-x:auto;max-height:none}
-  #right{top:auto;bottom:8px;max-height:46%}
-  #kpi{display:none}
-  #foot{display:none}
-  .lb{white-space:nowrap}
+  #detail{width:auto;margin:8px 8px 8px;max-width:none}
+  #vkpi{grid-template-columns:repeat(3,1fr)}
+  .navitem{min-width:88px;min-height:42px;padding:6px 10px}
+  .navitem .nt{font-size:12px}
 }
 </style>
 """
@@ -157,7 +165,7 @@ html,body{margin:0;height:100%;background:var(--page);color:var(--ink);overflow:
 <div id="bar">
   <div class="bd">Hay<b>Day</b></div>
   <div class="bsep"></div>
-  <div class="btitle">도시환경 공간분석툴 · <b>부산 사하구 신평·장림·다대동 일원</b> · 신평장림산단 FutureVibe-01</div>
+  <div class="btitle">도시환경 공간분석툴 · <b>부산 사하구 신평·장림·다대동 일원</b> · 서부산스마트밸리(구 신평·장림산단)</div>
   <div id="tabs">
     <button class="vbtn" onclick="tilt()">기울이기</button>
     <button class="vbtn" onclick="resetView()">초기화</button>
@@ -168,17 +176,14 @@ html,body{margin:0;height:100%;background:var(--page);color:var(--ink);overflow:
   </div>
 </div>
 <div id="map"></div>
-<div id="left">
-  <div class="card"><div class="chd">현황 통계</div><div id="kpi"></div></div>
-  <div class="card"><div class="chd" style="padding-bottom:2px">레이어</div><div id="lbox"></div></div>
-</div>
-<div id="right">
-  <div id="vhead"></div><div id="vmode"></div><div id="vbody"></div>
-</div>
-<div id="foot">
-  건물 · 용도지역 · 법정동 · 개별공시지가 (c) VWorld<br>
-  등록공장 (c) 부산광역시 제조업 공장등록현황 2025-12-31<br>
-  위성영상 (c) Esri World Imagery
+<div id="shellwrap">
+  <div id="shell"><div id="navlist"></div></div>
+  <div id="detail">
+    <div id="vhead"></div>
+    <div id="vkpi"></div>
+    <div id="vmode"></div>
+    <div id="vbody"></div>
+  </div>
 </div>
 """
 

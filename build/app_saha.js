@@ -8,6 +8,7 @@ const SITEPAR={{SITEPAR}};
 const FCT={{FCT}};
 const IND={{IND}};
 const MP={{MP}};
+const YTH={{YTH}};
 
 /* ══════════════════════════════════════════════════════════════════
    팔레트 — dataviz 검증기(scripts/validate_palette.js --mode dark)
@@ -37,6 +38,13 @@ const SECTORS=[
  ['기타',           '#e66767', /./]
 ];
 function secOf(u){for(let i=0;i<SECTORS.length;i++)if(SECTORS[i][2].test(u||''))return i;return SECTORS.length-1;}
+
+
+/* 청년·고령 지표 램프 — LVRAMP 와 같은 방식으로 검증 팔레트에서 파생한 단일색조다.
+   무지개 금지. 발산(변화폭)만 예외로 주황(#d95926)↔파랑(#3987e5), 중립은 회색(#6b7280). */
+const RYTH=[[11,'#cde2fb'],[13.5,'#9ec5f4'],[15.5,'#6da7ec'],[18,'#3987e5'],[25,'#184f95']];
+const ROLD=[[18,'#f7e7c6'],[23,'#e3bb72'],[28,'#c98500'],[37,'#8a5b00']];
+const RDR =[[-11,'#a8380f'],[-7,'#d95926'],[-3,'#e0997c'],[0,'#6b7280'],[1.5,'#3987e5']];
 
 /* 층수 순차 램프 — 단일 색조(blue) 밝음→어두움. 무지개 금지. */
 const LVRAMP=[[0,'#cde2fb'],[2,'#9ec5f4'],[4,'#6da7ec'],[7,'#3987e5'],[12,'#256abf'],[20,'#184f95']];
@@ -77,6 +85,20 @@ const EMDV_MAIN={type:'FeatureCollection',features:MAIN_TGT.map(p=>({
 const EMD_MAIN={type:'FeatureCollection',features:mainland(EMD).map(p=>({
   type:'Feature',properties:{n:p.n},geometry:{type:'Polygon',coordinates:p.poly}}))};
 
+/* ── 청년·고령 지표를 법정동 경계에 붙인다 ─────────────────────────
+   원자료는 행정동(16개)이고 지도 경계는 법정동(8개)이다. YTH.json 생성 단계에서
+   행정동을 법정동으로 합산해 뒀다. 여기서는 조인만 한다.
+   ⚠ 스타일에 glyphs 가 없어 symbol 레이어(라벨)를 쓸 수 없다. 이름은 호버로 보여준다. */
+const YI=YTH.years.length-1, Y0=0;
+const EMD_YTH={type:'FeatureCollection',features:EMD_MAIN.features.map(f=>{
+  const n=f.properties.n, v=YTH.emd[n];
+  const q={n:n,has:v?1:0};
+  if(v){q.tot=v.tot[YI];q.yth=v.yth[YI];q.old=v.old[YI];
+        q.r=v.r[YI];q.r0=v.r[Y0];q.dr=v.dr;q.ychg=v.ychg;q.tchg=v.tchg;
+        q.oldr=+(v.old[YI]/v.tot[YI]*100).toFixed(2);}
+  return {type:'Feature',properties:q,geometry:f.geometry};})};
+const YTH_MISS=EMD_YTH.features.filter(f=>!f.properties.has).map(f=>f.properties.n);
+
 /* ── 집계 ─────────────────────────────────────────────────────── */
 const NB=BD.f.length, NSITE=BD.f.filter(r=>r[3]).length, NIND=IND.f.length;
 const LVN=BD.f.filter(r=>r[0]>0).length;
@@ -90,6 +112,10 @@ const LVB=[[1,2,0],[3,5,0],[6,10,0],[11,99,0]];
 BD.f.forEach(r=>{const v=r[0];if(!v)return;LVB.forEach(b=>{if(v>=b[0]&&v<=b[1])b[2]++;});});
 const JIGA=SITEPAR.map(p=>+p.z).filter(v=>v>0).sort((a,b)=>a-b);
 const JIGA_MED=JIGA.length?JIGA[Math.floor(JIGA.length/2)]:0;
+const SG=YTH.sigg;
+const SG_R0=+(SG.yth[0]/SG.tot[0]*100).toFixed(2), SG_R1=+(SG.yth[YI]/SG.tot[YI]*100).toFixed(2);
+const SG_O0=+(SG.old[0]/SG.tot[0]*100).toFixed(1), SG_O1=+(SG.old[YI]/SG.tot[YI]*100).toFixed(1);
+const SG_TCHG=+((SG.tot[YI]/SG.tot[0]-1)*100).toFixed(1), SG_YCHG=+((SG.yth[YI]/SG.yth[0]-1)*100).toFixed(1);
 const nf=n=>n.toLocaleString('ko-KR');
 
 /* ── 지도 ─────────────────────────────────────────────────────── */
@@ -121,6 +147,7 @@ function addSources(){
   map.addSource('site',{type:'geojson',data:{type:'FeatureCollection',features:[SITE]}});
   map.addSource('bld',{type:'geojson',data:BUILDINGS});
   map.addSource('fac',{type:'geojson',data:FACTORIES});
+  map.addSource('yth',{type:'geojson',data:EMD_YTH});
 }
 
 function zgExpr(prop){const e=['match',['get',prop]];ZG.forEach((g,i)=>e.push(i,g.c));e.push(ZG[4].c);return e;}
@@ -128,6 +155,14 @@ function bldColor(mode){
   if(mode==='zone')return zgExpr('zg');
   if(mode==='lv'){const e=['interpolate',['linear'],['get','lv']];LVRAMP.forEach(([v,c])=>e.push(v,c));return e;}
   return ['case',['==',['get','ind'],1],'#d95926','#4b5563'];
+}
+
+function ythColor(m){
+  const key=m==='old'?'oldr':(m==='dr'?'dr':'r');
+  const ramp=m==='old'?ROLD:(m==='dr'?RDR:RYTH);
+  const e=['interpolate',['linear'],['get',key]];
+  ramp.forEach(([v,c])=>e.push(v,c));
+  return ['case',['==',['get','has'],1],e,'#3a3f47'];
 }
 
 function addLayers(){
@@ -150,6 +185,12 @@ function addLayers(){
            'fill-extrusion-base':0,
            'fill-extrusion-opacity':0.93,
            'fill-extrusion-vertical-gradient':true}});
+
+  /* 법정동 코로플레스 — 건물보다 아래, 위성 바로 위에 깐다 */
+  map.addLayer({id:'l-yth',type:'fill',source:'yth',
+    paint:{'fill-color':ythColor('r'),'fill-opacity':0.68},layout:{visibility:'none'}});
+  map.addLayer({id:'l-yth-o',type:'line',source:'yth',
+    paint:{'line-color':'#0b0d11','line-width':1.2,'line-opacity':0.75},layout:{visibility:'none'}});
 
   map.addLayer({id:'l-emd',type:'line',source:'emd',
     paint:{'line-color':'#7d8794','line-width':0.9,'line-dasharray':[3,2.5],'line-opacity':0.55}});
@@ -190,11 +231,17 @@ function doFit(){
   map.resize();
   const w=map.getCanvas().clientWidth||1440;
   const p=map.getPitch();
-  map.fitBounds(TGT_BB,{padding:w<960?{top:52,bottom:28,left:10,right:10}
-                                    :{top:56,bottom:36,left:292,right:296},duration:0});
-  /* ⚠ pitch 가 붙으면 fitBounds 가 보수적으로 잡아 대상지가 화면의 절반만 쓴다(실측).
-     기울기에 비례해 줌을 되돌려 준다. 값은 화면 대조로 맞춘 것이다. */
-  if(p>8)map.setZoom(map.getZoom()+0.30+p*0.0115);
+  /* V5 레이아웃 기준 패딩 — 상단 탭 스트립 높이와 왼쪽 패널 폭을 DOM 에서 실측한다.
+     하드코딩하면 탭이 2줄로 접힐 때 대상지가 스트립 뒤로 들어간다. */
+  const sh=document.getElementById('shell'), dt=document.getElementById('detail');
+  const shH=(sh?sh.offsetHeight:60)+10;
+  const dtW=(dt&&!dt.classList.contains('fold'))?dt.offsetWidth+24:24;
+  map.fitBounds(TGT_BB,{padding:w<960?{top:shH+8,bottom:28,left:10,right:10}
+                                    :{top:shH,bottom:30,left:dtW,right:28},duration:0});
+  /* ⚠ 줌 보정은 폐기했다. 좌우 분리판(패딩 292/296)에서는 fitBounds 가 보수적이라
+     +0.30+pitch*0.0115 을 되돌려 줬는데, V5(왼쪽 패널 584px)에서는 그 보정이 과해
+     대상지 남쪽이 화면 밖으로 나간다(실측 2026-08-01: bump 0.15 부터 이미 벗어남).
+     지금은 pitch 0/28/40 모두 bump 없이 정확히 물린다. 다시 넣지 마라. */
 }
 window.addEventListener('resize',()=>{clearTimeout(window.__rz);window.__rz=setTimeout(doFit,180);});
 
@@ -204,7 +251,7 @@ function chips(items){return items.map(([c,k,v])=>
 
 const LAYERS={
  bld:{t:'건축물',sub:nf(NB)+'동',
-   show:['l-bld','l-site','l-site-o'],hide:['l-zon','l-zon-o','l-fac','l-fac-h'],
+   show:['l-bld','l-site','l-site-o'],hide:['l-zon','l-zon-o','l-fac','l-fac-h','l-yth','l-yth-o'],
    modes:[['zone','용도지역'],['ind','공업지역 내외']],   /* 층수 모드 제외 — 공단지역이라 층수 표현 불필요 (2026-07-31 남실장님 확정) */
    legend(m){
      if(m==='lv')return `<div class="grp">지상 층수</div>
@@ -226,7 +273,7 @@ const LAYERS={
       응답하지 않습니다. <b>노후도 30년 판정은 이 값이 들어온 뒤 표시됩니다.</b></div>`},
 
  fac:{t:'등록공장',sub:nf(NIND)+'개',
-   show:['l-fac','l-site-o'],hide:['l-zon','l-zon-o','l-bld','l-fac-h'],
+   show:['l-fac','l-site-o'],hide:['l-zon','l-zon-o','l-bld','l-fac-h','l-yth','l-yth-o'],
    modes:[['pt','개별 위치'],['heat','밀도']],
    legend(m){
      if(m==='heat')return `<div class="grp">공장 밀도</div>
@@ -243,8 +290,55 @@ const LAYERS={
       <b>이 자료에는 종업원수·용지면적 항목이 없습니다.</b>
       467개 세부업종을 8축으로 묶었습니다 — 개별 업종명은 점을 눌러 확인하세요.</div>`},
 
+ yth:{t:'청년 지표',sub:'20~34세 · 18년',
+   show:['l-yth','l-yth-o','l-site-o'],hide:['l-bld','l-zon','l-zon-o','l-fac','l-fac-h'],
+   modes:[['r','청년 비중'],['dr','비중 변화'],['old','고령 비중']],
+   legend(m){
+     const E=Object.entries(YTH.emd);
+     const q=`<div class="warn2"><b>왜 청년이 머물지 않는가</b> · <b>머물게 하려면</b><br>
+       이 두 질문이 이 레이어의 목적입니다. 아래 수치가 앞 질문의 정량 답입니다.</div>`;
+     if(m==='dr'){
+       const rows=E.map(([n,v])=>[n,v.dr,v.ychg,v.tchg]).sort((a,b)=>a[1]-b[1]);
+       const mx=Math.max(...rows.map(r=>Math.abs(r[1])));
+       return `<div class="grp">청년 비중 변화 ${YTH.years[0]} → ${YTH.years[YI]}</div>
+       <div class="ramp"><span>-11p</span>
+        <i style="background:linear-gradient(90deg,#a8380f,#d95926,#e0997c,#6b7280,#3987e5)"></i><span>+1.5p</span></div>
+       ${rows.map(([n,d,yc,tc])=>`<div class="mp">
+          <b class="mpc" style="background:${d<0?'#d95926':'#3987e5'}">${d<0?'▼':'▲'}</b>
+          <div class="mpb"><div class="mpn">${n}</div>
+            <div class="bar"><i style="width:${Math.max(3,Math.abs(d)/mx*100)}%;background:${d<0?'#d95926':'#3987e5'}"></i></div></div>
+          <div class="mpv">${d>0?'+':''}${d}p</div></div>`).join('')}
+       <div class="row tot"><span>사하구 전체</span><b>${SG_R0}% → ${SG_R1}%</b></div>
+       <div class="row"><span>청년(20~34세) 증감</span><b>${SG_YCHG}%</b></div>
+       <div class="row"><span>총인구 증감</span><b>${SG_TCHG}%</b></div>
+       <div class="note">청년 감소율이 총인구 감소율의 <b>약 ${(SG_YCHG/SG_TCHG).toFixed(1)}배</b>입니다.
+         인구가 주는 게 아니라 <b>청년이 먼저 빠지는</b> 구조입니다.</div>${q}`;
+     }
+     if(m==='old'){
+       const rows=E.map(([n,v])=>[n,+(v.old[YI]/v.tot[YI]*100).toFixed(1)]).sort((a,b)=>b[1]-a[1]);
+       return `<div class="grp">고령(65세+) 비중 · ${YTH.years[YI]}</div>
+       <div class="ramp"><span>18%</span>
+        <i style="background:linear-gradient(90deg,#f7e7c6,#e3bb72,#c98500,#8a5b00)"></i><span>37%</span></div>
+       ${chips(rows.map(([n,v])=>['#c98500',n,v+'%']))}
+       <div class="row tot"><span>사하구 전체</span><b>${SG_O0}% → ${SG_O1}%</b></div>
+       <div class="note">18년 만에 <b>${(SG_O1/SG_O0).toFixed(1)}배</b>가 됐습니다.
+         초고령사회 기준(20%)을 이미 넘겼습니다.</div>${q}`;
+     }
+     const rows=E.map(([n,v])=>[n,v.r[YI]]).sort((a,b)=>b[1]-a[1]);
+     return `<div class="grp">청년(20~34세) 비중 · ${YTH.years[YI]}</div>
+       <div class="ramp"><span>11%</span>
+        <i style="background:linear-gradient(90deg,#cde2fb,#9ec5f4,#6da7ec,#3987e5,#184f95)"></i><span>25%</span></div>
+       ${chips(rows.map(([n,v])=>['#3987e5',n,v+'%']))}
+       <div class="row tot"><span>사하구 전체</span><b>${SG_R1}%</b></div>
+       <div class="row"><span>청년 인구</span><b>${nf(SG.yth[YI])}명</b></div>
+       <div class="note">법정동을 누르면 18년 추이를 볼 수 있습니다.</div>${q}`;},
+   extra:`<div class="note">출처: <b>행정안전부 주민등록인구현황</b>(연말 기준, 5세 단위, ${YTH.years[0]}~${YTH.years[YI]}).
+      원자료는 행정동 16개이며 지도 경계(법정동 8개)에 맞춰 합산했습니다.
+      <b>공장별 재직인원·연령대는 공개 통계에 없습니다</b> — 사업체 단위 미시자료라
+      발주처·산단관리공단 자료가 있어야 합니다.${YTH_MISS.length?'<br>⚠ 미매칭: '+YTH_MISS.join(', '):''}</div>`},
+
  zon:{t:'용도지역',sub:nf(ZONING.features.length)+'구역',
-   show:['l-zon','l-zon-o','l-site-o'],hide:['l-bld','l-fac','l-fac-h'],
+   show:['l-zon','l-zon-o','l-site-o'],hide:['l-bld','l-fac','l-fac-h','l-yth','l-yth-o'],
    modes:[['all','전체'],['ind','공업계열만']],
    legend(){return `<div class="grp">계열별 구역 수</div>
      ${chips(ZG.map((g,i)=>[g.c,g.k,nf(ZONCNT[i])]))}`;},
@@ -252,7 +346,7 @@ const LAYERS={
       원본 산업단지 경계 shp 는 미확보이며 현재는 용도지역 기반 근사입니다.</div>`},
 
  site:{t:'대상지',sub:SITE.geometry.coordinates.length+'폴리곤',
-   show:['l-site','l-site-o','l-bld'],hide:['l-zon','l-zon-o','l-fac','l-fac-h'],
+   show:['l-site','l-site-o','l-bld'],hide:['l-zon','l-zon-o','l-fac','l-fac-h','l-yth','l-yth-o'],
    modes:[['fill','면']],
    legend(){return `<div class="grp">대상지 (공업지역 병합)</div>
      ${chips([['#d95926','공업계열 폴리곤',SITE.geometry.coordinates.length+'개']])}
@@ -263,7 +357,7 @@ const LAYERS={
       위 폴리곤은 용도지역 기반 근사라 이 수치와 정확히 일치하지 않습니다.</div>`},
 
  mp:{t:'사업 배치도',sub:'A~G '+MP.programs.length+'개',   /* 명칭 확정: 마스터플랜 → 사업 배치도 (2026-07-31) */
-   show:['l-site','l-site-o','l-bld'],hide:['l-zon','l-zon-o','l-fac','l-fac-h'],
+   show:['l-site','l-site-o','l-bld'],hide:['l-zon','l-zon-o','l-fac','l-fac-h','l-yth','l-yth-o'],
    modes:[['list','단위사업']],
    legend(){
      const mx=Math.max(...MP.programs.map(p=>p.b));
@@ -283,15 +377,24 @@ const LAYERS={
 };
 
 let cur='bld', curMode={};
+let shown=false;
 function selectLayer(k){
-  cur=k;
+  /* 활성 탭을 다시 누르면 접힌다 — V5 동작(기장·서구와 동일).
+     ⚠ setMode 는 selectLayer 가 아니라 renderLayer 를 부른다. 안 그러면 모드 클릭이 패널을 접는다. */
+  if(shown&&cur===k){toggleFold();return;}
+  cur=k; shown=true;
+  const dt=document.getElementById('detail'); if(dt)dt.classList.remove('fold');
+  renderLayer(k);
+}
+function renderLayer(k){
   Object.keys(LAYERS).forEach(kk=>{const el=document.getElementById('lb-'+kk);if(el)el.classList.toggle('on',kk===k);});
   const L=LAYERS[k];
   L.hide.forEach(id=>{if(map.getLayer(id))map.setLayoutProperty(id,'visibility','none');});
   L.show.forEach(id=>{if(map.getLayer(id))map.setLayoutProperty(id,'visibility','visible');});
   if(!curMode[k])curMode[k]=L.modes[0][0];
   document.getElementById('vhead').innerHTML=
-    `<div class="vt">${L.t}</div><div class="vs">${L.sub}</div>`;
+    `<div class="vt">${L.t}</div><div class="vs">${L.sub}</div>
+     <button class="fold" onclick="toggleFold()">▲ 접기</button>`;
   document.getElementById('vmode').innerHTML=L.modes.length>1
     ? L.modes.map(([v,t])=>`<button class="mode ${curMode[k]===v?'on':''}" onclick="setMode('${v}')">${t}</button>`).join('')
     : `<div class="onemode">${L.modes[0][1]}</div>`;
@@ -299,7 +402,7 @@ function selectLayer(k){
   document.getElementById('vbody').innerHTML=L.legend(curMode[k])+(L.extra||'');
   document.getElementById('vbody').scrollTop=0;
 }
-function setMode(v){curMode[cur]=v;selectLayer(cur);}
+function setMode(v){curMode[cur]=v;renderLayer(cur);}
 function applyMode(){
   const m=curMode[cur];
   if(cur==='bld'&&map.getLayer('l-bld'))map.setPaintProperty('l-bld','fill-extrusion-color',bldColor(m));
@@ -307,21 +410,33 @@ function applyMode(){
     map.setLayoutProperty('l-fac','visibility',m==='heat'?'none':'visible');
     map.setLayoutProperty('l-fac-h','visibility',m==='heat'?'visible':'none');
   }
+  if(cur==='yth'&&map.getLayer('l-yth'))map.setPaintProperty('l-yth','fill-color',ythColor(m));
   if(cur==='zon'){
     const f=m==='ind'?['in',['get','u'],['literal',IND_ZONES]]:null;
     map.setFilter('l-zon',f);map.setFilter('l-zon-o',f);
   }
 }
-window.setMode=setMode;window.selectLayer=selectLayer;
+function toggleFold(){
+  const d=document.getElementById('detail');if(!d)return;
+  d.classList.toggle('fold');
+  const b=d.querySelector('.fold');if(b)b.textContent=d.classList.contains('fold')?'▼ 펼치기':'▲ 접기';
+  setTimeout(doFit,180);
+}
+window.setMode=setMode;window.selectLayer=selectLayer;window.toggleFold=toggleFold;
 
 function renderShell(){
-  document.getElementById('kpi').innerHTML=[
-    ['건축물',nf(NB),'동'],['대상지 내',nf(NSITE),'동'],['등록공장',nf(NIND),'개'],
-    ['용도지역',nf(ZONING.features.length),'구역'],['필지',nf(SITEPAR.length),'필지']
+  document.getElementById('vkpi').innerHTML=[
+    ['건축물',nf(NB),'동'],['등록공장',nf(NIND),'개'],['용도지역',nf(ZONING.features.length),'구역'],
+    ['청년 비중',SG_R1,'%'],['청년 18년',SG_YCHG,'%']
   ].map(([a,b,c])=>`<div class="k"><span>${a}</span><b>${b}<em>${c}</em></b></div>`).join('');
-  document.getElementById('lbox').innerHTML=Object.entries(LAYERS).map(([k,v])=>
-    `<button id="lb-${k}" class="lb" onclick="selectLayer('${k}')">
-       <span>${v.t}</span><em>${v.sub}</em></button>`).join('');
+  /* 긴 제목 자동 2줄 — 10자 초과 시 가운데에 가장 가까운 공백에서 나눈다 (V5 규격) */
+  const br=t=>{if(t.length<=10||t.indexOf(' ')<0)return t;
+    const m=t.length/2;let bi=-1,bd=99;
+    for(let i=0;i<t.length;i++)if(t[i]===' '&&Math.abs(i-m)<bd){bd=Math.abs(i-m);bi=i;}
+    return bi<0?t:t.slice(0,bi)+'\n'+t.slice(bi+1);};
+  document.getElementById('navlist').innerHTML=Object.entries(LAYERS).map(([k,v])=>
+    `<button id="lb-${k}" class="navitem" onclick="selectLayer('${k}')">
+       <span class="nt">${br(v.t)}</span><span class="ns">${v.sub}</span></button>`).join('');
 }
 
 /* ── 호버 ─────────────────────────────────────────────────────── */
@@ -343,6 +458,21 @@ map.on('mousemove','l-bld',e=>{
      <div class="pg na">준공연도 미확보 (건축HUB 대기)</div></div>`).addTo(map);
 });
 map.on('mouseleave','l-bld',()=>{map.getCanvas().style.cursor='';pop.remove();});
+map.on('mousemove','l-yth',e=>{
+  const p=e.features[0].properties;map.getCanvas().style.cursor='pointer';
+  if(!p.has){pop.setLngLat(e.lngLat).setHTML(`<div class="pp"><b>${p.n}</b>
+    <div class="pg na">인구 자료 미매칭</div></div>`).addTo(map);return;}
+  const v=YTH.emd[p.n];
+  const spark=v.r.map((x,i)=>`<i style="height:${Math.max(6,(x-8)/20*30)}px;background:${i===YI?'#f0a882':'#3987e5'}"></i>`).join('');
+  pop.setLngLat(e.lngLat).setHTML(
+   `<div class="pp"><b>${p.n}</b>
+     <div class="ps">청년 비중 ${p.r0}% → <b>${p.r}%</b> (${p.dr>0?'+':''}${p.dr}p)</div>
+     <div class="spark">${spark}</div>
+     <div class="pu">청년 ${nf(v.yth[Y0])} → ${nf(p.yth)}명 (${p.ychg>0?'+':''}${p.ychg}%)</div>
+     <div class="pu">총인구 ${nf(v.tot[Y0])} → ${nf(p.tot)}명 (${p.tchg>0?'+':''}${p.tchg}%)</div>
+     <div class="pg"><i style="background:#c98500"></i>고령 ${p.oldr}%</div></div>`).addTo(map);
+});
+map.on('mouseleave','l-yth',()=>{map.getCanvas().style.cursor='';pop.remove();});
 
 /* 3D 체감을 위해 첫 진입에 살짝 기울인다.
    ⚠ fitBounds 는 현재 pitch 를 반영한다. 기울인 뒤 다시 물려야 화면이 헐렁해지지 않는다.
