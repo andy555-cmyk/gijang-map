@@ -425,9 +425,8 @@ renderPop();
    크기 3단계는 zoom 으로 준다 — px 를 단계마다 다시 쓰면 유지가 안 되고 transform:scale 은 스크롤이 깨진다.
    ⚠ zoom 을 쓰면 max-height 도 배율로 나눠야 패널이 화면 밖으로 나간다. */
 #detail{width:700px!important;max-width:calc(100% - 28px)!important}
-#detail.fs-s{zoom:1;max-height:calc(100vh - 190px)!important}
-#detail.fs-m{zoom:1.22;max-height:calc((100vh - 190px)/1.22)!important}
-#detail.fs-l{zoom:1.5;max-height:calc((100vh - 190px)/1.5)!important}
+/* 배율은 JS 가 인라인으로 넣는다 — 화면 폭에 비례해야 한다.
+   1440px 기준 크기를 2400px 모니터에 그대로 쓰면 60% 로 작아 보인다(실측). */
 
 /* 기본 타이포 확대 — 배율과 별개로 바닥값을 올린다 */
 .navitem{min-width:120px!important;min-height:56px!important;padding:9px 17px!important}
@@ -457,10 +456,11 @@ renderPop();
 </style>
 <script id="hayday-fs-js">
 (function(){
-  var LV=[['s','작게'],['m','보통'],['l','크게']], cur='m';
-  /* 패널이 커진 만큼 지도 중심을 오른쪽으로 밀어준다.
-     ⚠ 서구·기장 앱은 map 을 let 으로 선언해 window.map 이 없다 — 하지만 같은 전역 스코프라
-        여기서 이름으로 직접 접근된다(실측). padding 은 이후 fitBounds 에도 계속 적용된다. */
+  var LV=[['s','작게'],['m','보통'],['l','크게']], BASE={s:1.0,m:1.24,l:1.55}, cur='m';
+  /* ★ 배율은 화면 폭에 비례한다. 지자체 고위직이 대형 화면으로 본다 — 넓을수록 더 키운다. */
+  function k(){return Math.min(2.0,Math.max(1,(window.innerWidth||1440)/1440));}
+  /* 패널이 커진 만큼 지도 중심을 오른쪽으로 민다.
+     ⚠ 서구·기장 앱의 map 은 window 속성이 아니지만 같은 전역 스코프라 이름으로 접근된다(실측). */
   function nudge(){
     try{
       if(typeof map==='undefined'||!map||typeof map.easeTo!=='function')return;
@@ -472,11 +472,15 @@ renderPop();
       map.easeTo({padding:{left:w,top:t,right:26,bottom:26},duration:420});
     }catch(e){}
   }
-  function apply(k){cur=k;var d=document.getElementById('detail');if(!d)return;
-    LV.forEach(function(x){d.classList.toggle('fs-'+x[0],x[0]===k);});
+  function apply(lv){cur=lv;var d=document.getElementById('detail');if(!d)return;
+    var z=+(BASE[lv]*k()).toFixed(3);
+    d.style.zoom=z;
+    d.style.maxHeight='calc((100vh - 190px)/'+z+')';
+    var nv=document.getElementById('navlist');
+    if(nv)nv.style.zoom=(1+(z-1)*0.62).toFixed(3);
     var bs=d.querySelectorAll('#fsz button');
-    for(var i=0;i<bs.length;i++)bs[i].classList.toggle('on',LV[i][0]===k);
-    setTimeout(nudge,260);}
+    for(var i=0;i<bs.length;i++)bs[i].classList.toggle('on',LV[i][0]===lv);
+    setTimeout(nudge,300);}
   function mount(n){
     var h=document.getElementById('detail-h'), c=document.getElementById('detail-close');
     if(!h){if((n||0)<80)return setTimeout(function(){mount((n||0)+1);},250);return;}
@@ -484,15 +488,14 @@ renderPop();
     var w=document.createElement('div');w.id='fsz';
     w.innerHTML='<b>글자</b>'+LV.map(function(x){
       return '<button type="button" data-k="'+x[0]+'">'+x[1]+'</button>';}).join('');
-    w.addEventListener('click',function(e){var k=e.target&&e.target.getAttribute('data-k');
-      if(k){e.stopPropagation();apply(k);}});
+    w.addEventListener('click',function(e){var kk=e.target&&e.target.getAttribute('data-k');
+      if(kk){e.stopPropagation();apply(kk);}});
     if(c)h.insertBefore(w,c);else h.appendChild(w);
-    /* 탭 전환·접기 후에도 다시 밀어준다 */
     document.addEventListener('click',function(e){
       if(e.target&&e.target.closest&&(e.target.closest('.navitem')||e.target.closest('#detail-close')))
         setTimeout(nudge,320);},true);
     window.addEventListener('resize',function(){clearTimeout(window.__fsrz);
-      window.__fsrz=setTimeout(nudge,220);});
+      window.__fsrz=setTimeout(function(){apply(cur);},240);});
     apply('m');
     setTimeout(nudge,1500); setTimeout(nudge,3200);
   }
