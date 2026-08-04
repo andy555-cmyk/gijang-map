@@ -1,17 +1,21 @@
 #!/usr/bin/env python3
-"""부산 시간대별 교통 속도 지도 — 데이터 빌드
+"""부산 시간대별 도로 속도 지도 — 데이터 빌드 (v2)
 
-원천 3종 (전부 실측 확인, 2026-08-01)
+원천 3종 (전부 실측 확인, 2026-08-04)
   1) 부산광역시_지능형교통정보 구간레벨패턴정보 (data.go.kr 15041722)
      요일 / 시분 / 구간명 / 시점 / 종점 / 속도(시속)
      ⚠ 공개분은 18:00~18:55(5분 12스텝)만 들어있다. 24시간이 아니다.
   2) 부산광역시_지능형교통정보 링크정보 (15041723)  구간키 → 링크번호(표준노드링크 ID)
-  3) 국토교통부 표준노드링크 MOCT_LINK.shp (its.go.kr)  링크번호 → 도로 형상
+  3) 국토교통부 표준노드링크 MOCT_LINK.shp (its.go.kr)  링크번호 → 도로 형상·위계·차로·제한속도
 
-조인 실측: 패턴→링크 100.0% / 링크→SHP 96.4%
-좌표계: EPSG:5186(ITRF2000 중부) → EPSG:4326
+v2 변경 (대표 피드백 08-04)
+  · 🔴 절대속도만으로 줄 세우면 제한 30km/h 이면도로가 랭킹을 독식한다(실측: TOP10 중 6개).
+    → **속도비(실제/제한)** 를 1차 지표로 올린다. 두 랭킹 TOP50 겹침이 23개뿐이었다.
+  · 도로등급(ROAD_RANK)·차로수(LANES)·제한속도(MAX_SPD)·구간길이(LENGTH)를 세그먼트에 싣는다.
+  · 지체시간 = 길이/실제속도 − 길이/제한속도 (초). 짧은 구간 과대평가를 잡는다.
+  · **미관측 배경망(BASE)** 을 만든다. 관측 구간만 그리면 도로가 끊겨 보인다는 지적의 답이다.
 """
-import csv, glob, json, os, statistics, sys
+import csv, glob, json, math, os, statistics, sys
 from collections import defaultdict
 import shapefile
 from pyproj import Transformer
@@ -23,6 +27,19 @@ os.makedirs(OUT, exist_ok=True)
 DAYS = ['월요일', '화요일', '수요일', '목요일', '금요일', '토요일', '일요일']
 DAYK = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
 
+# 국토부 표준노드링크 도로등급 코드
+RANK = {'101': '고속도로', '102': '도시고속화도로', '103': '일반국도', '104': '특별·광역시도',
+        '105': '국가지원지방도', '106': '지방도', '107': '시군도', '108': '기타'}
+# 화면 필터용 묶음 — 위계가 8개면 칩이 너무 많다. 4개로 접는다.
+def rank_group(r):
+    if r in ('101', '102'):
+        return 0          # 고속·도시고속
+    if r in ('103', '105', '106'):
+        return 1          # 국도·지방도
+    if r == '104':
+        return 2          # 광역시도(부산 간선의 78%)
+    return 3              # 시군도·기타
+
 
 def read_csv(path):
     with open(path, encoding='euc-kr', errors='replace') as f:
@@ -30,18 +47,14 @@ def read_csv(path):
 
 
 def main():
-    # ── 1. 링크정보: 구간키 → 링크번호(복수 가능)
+    # ── 1. 링크정보: 구간키 → 링크번호
     lnk = read_csv(os.path.join(BASE, 'link.csv'))
-    key2ids = defaultdict(list)
     id2key = {}
     for r in lnk:
-        lid = r['링크번호'].strip()
-        k = (r['링크명'].strip(), r['시점'].strip(), r['종점'].strip())
-        key2ids[k].append(lid)
-        id2key[lid] = k
-    print(f'링크정보 {len(lnk):,}행 · 고유구간 {len(key2ids):,}')
+        id2key[r['링크번호'].strip()] = (r['링크명'].strip(), r['시점'].strip(), r['종점'].strip())
+    print(f'링크정보 {len(lnk):,}행')
 
-    # ── 2. 패턴: 구간키 → 요일 → 12스텝 속도
+    # ── 2. 패턴: 구간키 → 요일 → 스텝별 속도
     pat = read_csv(os.path.join(BASE, 'pattern.csv'))
     times = sorted({r['시분'] for r in pat})
     tidx = {t: i for i, t in enumerate(times)}
@@ -49,18 +62,16 @@ def main():
     spd = defaultdict(lambda: [[None] * len(times) for _ in DAYS])
     for r in pat:
         k = (r['구간명'].strip(), r['시점'].strip(), r['종점'].strip())
-        d = didx.get(r['요일'])
-        t = tidx.get(r['시분'])
+        d, t = didx.get(r['요일']), tidx.get(r['시분'])
         if d is None or t is None:
             continue
         try:
-            v = int(r['속도(시속)'])
+            spd[k][d][t] = int(r['속도(시속)'])
         except (ValueError, TypeError):
-            continue
-        spd[k][d][t] = v
+            pass
     print(f'패턴 {len(pat):,}행 · 구간 {len(spd):,} · 시각 {len(times)} ({times[0]}~{times[-1]})')
 
-    # ── 3. 표준노드링크 형상
+    # ── 3. 표준노드링크
     shp = glob.glob(os.path.join(BASE, 'nl', '*', 'MOCT_LINK.shp'))[0]
     sf = shapefile.Reader(shp, encoding='cp949', encodingErrors='replace')
     flds = [f[0] for f in sf.fields[1:]]
@@ -68,93 +79,134 @@ def main():
     tr = Transformer.from_crs('EPSG:5186', 'EPSG:4326', always_xy=True)
 
     need = set(id2key)
-    geom = {}
-    meta = {}
+    obs, bg = {}, []
+    # 부산 대략 bbox — 배경망을 이 안으로만 자른다(전국 155만 링크를 다 실을 수 없다)
+    BB = (128.70, 34.98, 129.35, 35.42)
+
     for sr in sf.iterShapeRecords():
-        lid = sr.record[I['LINK_ID']]
-        if lid not in need:
-            continue
+        rec = sr.record
+        lid = rec[I['LINK_ID']]
         pts = sr.shape.points
         if len(pts) < 2:
             continue
         xs, ys = zip(*pts)
         lons, lats = tr.transform(xs, ys)
-        geom[lid] = [[round(a, 5), round(b, 5)] for a, b in zip(lons, lats)]
-        meta[lid] = {
-            'road': (sr.record[I['ROAD_NAME']] or '').strip(),
-            'lanes': sr.record[I['LANES']],
-            'maxspd': sr.record[I['MAX_SPD']],
-        }
-    print(f'형상 확보 {len(geom):,} / {len(need):,} ({len(geom)/len(need)*100:.1f}%)')
+        inbb = (BB[0] <= lons[0] <= BB[2] and BB[1] <= lats[0] <= BB[3])
+        if lid in need:
+            obs[lid] = {
+                'g': [[round(a, 5), round(b, 5)] for a, b in zip(lons, lats)],
+                'rank': rec[I['ROAD_RANK']], 'lanes': rec[I['LANES']] or 0,
+                'mx': rec[I['MAX_SPD']] or 0, 'len': rec[I['LENGTH']] or 0,
+                'road': (rec[I['ROAD_NAME']] or '').strip(),
+            }
+        elif inbb:
+            # 배경망 — 형태만 보이면 되는 시각 요소다. 정밀도를 과감히 낮춘다.
+            #   · 100m 미만 링크 제외  · 좌표 4자리(≈11m)  · 중간점은 최대 6개로 솎음
+            L = rec[I['LENGTH']] or 0
+            if L < 100:
+                continue
+            g = [[round(a, 4), round(b, 4)] for a, b in zip(lons, lats)]
+            if len(g) > 8:
+                step = (len(g) - 1) / 7.0
+                g = [g[int(round(i * step))] for i in range(8)]
+            bg.append(g)
+    print(f'관측 형상 {len(obs):,} / {len(need):,} ({len(obs)/len(need)*100:.1f}%)')
+    print(f'배경망 {len(bg):,} 링크')
 
-    # ── 4. 조립 — 속도가 있는 링크만
+    # ── 4. 조립
     segs, sp_all = [], [[] for _ in DAYS]
-    nospd = 0
     for lid, k in sorted(id2key.items()):
-        g = geom.get(lid)
-        if not g:
-            continue
+        o = obs.get(lid)
         s = spd.get(k)
-        if s is None:
-            nospd += 1
+        if not o or s is None:
             continue
-        m = meta[lid]
-        segs.append([k[0], k[1], k[2], m['road'], m['lanes'], m['maxspd'], g])
+        # 지체시간(초) — 전 요일·전 스텝 평균 속도 기준. 제한속도 대비 손실.
+        vv = [v for row in s for v in row if v is not None]
+        avg = statistics.mean(vv) if vv else None
+        delay = None
+        if avg and o['mx'] and o['len']:
+            delay = round(o['len'] / 1000 * 3600 * (1 / avg - 1 / o['mx']), 1)
+        segs.append([
+            k[0], k[1], k[2],                    # 0 구간명 1 시점 2 종점
+            o['road'], o['lanes'], o['mx'],      # 3 도로명 4 차로 5 제한속도
+            rank_group(o['rank']), round(o['len']), delay,   # 6 등급군 7 길이(m) 8 지체(초)
+            o['g']                               # 9 형상
+        ])
         for d in range(len(DAYS)):
             sp_all[d].append(s[d])
-    print(f'최종 세그먼트 {len(segs):,} (형상○·속도✕ {nospd:,})')
+    print(f'최종 세그먼트 {len(segs):,}')
 
-    # ── 5. 통계 (환각 금지 — 전부 계산값)
+    # ── 5. 통계 (전부 계산값 — 하드코딩 없음)
     flat = [v for d in sp_all for row in d for v in row if v is not None]
+    RG = ['고속·도시고속', '국도·지방도', '광역시도', '시군도·기타']
     stat = {
-        'n_seg': len(segs),
-        'n_day': len(DAYS),
-        'n_step': len(times),
-        'times': times,
-        'days': DAYK,
-        'day_ko': [d[0] for d in DAYS],
+        'n_seg': len(segs), 'n_bg': len(bg),
+        'n_day': len(DAYS), 'n_step': len(times),
+        'times': times, 'days': DAYK, 'day_ko': [d[0] for d in DAYS],
+        'rank_ko': RG,
         'spd_min': min(flat), 'spd_max': max(flat),
         'spd_mean': round(statistics.mean(flat), 1),
         'spd_med': statistics.median(flat),
         'total_obs': len(flat),
     }
-    print('속도 분포 min/med/mean/max =',
-          stat['spd_min'], stat['spd_med'], stat['spd_mean'], stat['spd_max'])
 
     # 요일별 평균
     stat['day_mean'] = []
     for d in range(len(DAYS)):
         vv = [v for row in sp_all[d] for v in row if v is not None]
         stat['day_mean'].append(round(statistics.mean(vv), 1) if vv else None)
-    print('요일 평균', dict(zip(DAYK, stat['day_mean'])))
 
-    # 상습 정체 구간 TOP 20 (전 요일·전 스텝 평균 속도 최저)
-    rank = []
+    # 등급군별 요약 — 절대속도와 속도비를 나란히
+    gsum = []
+    for gi in range(len(RG)):
+        idxs = [i for i, s in enumerate(segs) if s[6] == gi]
+        a, r = [], []
+        for i in idxs:
+            vv = [sp_all[d][i][t] for d in range(len(DAYS)) for t in range(len(times))
+                  if sp_all[d][i][t] is not None]
+            if not vv:
+                continue
+            m = statistics.mean(vv)
+            a.append(m)
+            if segs[i][5]:
+                r.append(m / segs[i][5] * 100)
+        gsum.append({'n': len(idxs),
+                     'abs': round(statistics.mean(a), 1) if a else None,
+                     'ratio': round(statistics.mean(r), 1) if r else None})
+    stat['rank_sum'] = gsum
+
+    # 랭킹 — 속도비 기준(1차)과 절대속도 기준(대조군) 둘 다 낸다
+    rows = []
     for i, s in enumerate(segs):
         vv = [sp_all[d][i][t] for d in range(len(DAYS)) for t in range(len(times))
               if sp_all[d][i][t] is not None]
         if len(vv) < len(DAYS) * len(times) * 0.5:
             continue
-        rank.append((round(statistics.mean(vv), 1), i))
-    rank.sort()
-    stat['slow20'] = [[v, i] for v, i in rank[:20]]
-    stat['fast5'] = [[v, i] for v, i in rank[-5:]]
+        m = statistics.mean(vv)
+        rows.append({'i': i, 'abs': round(m, 1),
+                     'ratio': round(m / s[5] * 100, 1) if s[5] else None,
+                     'delay': s[8]})
+    rr = [r for r in rows if r['ratio'] is not None]
+    stat['rank_ratio'] = [[r['ratio'], r['i'], r['abs']] for r in sorted(rr, key=lambda x: x['ratio'])[:20]]
+    stat['rank_abs'] = [[r['abs'], r['i'], r['ratio']] for r in sorted(rows, key=lambda x: x['abs'])[:20]]
+    dd = [r for r in rows if r['delay'] is not None]
+    stat['rank_delay'] = [[r['delay'], r['i'], r['abs']] for r in sorted(dd, key=lambda x: -x['delay'])[:20]]
+    a50 = {r['i'] for r in sorted(rows, key=lambda x: x['abs'])[:50]}
+    b50 = {r['i'] for r in sorted(rr, key=lambda x: x['ratio'])[:50]}
+    stat['overlap50'] = len(a50 & b50)
 
-    bbox = [min(p[0] for s in segs for p in s[6]), min(p[1] for s in segs for p in s[6]),
-            max(p[0] for s in segs for p in s[6]), max(p[1] for s in segs for p in s[6])]
-    stat['bbox'] = [round(v, 5) for v in bbox]
-    print('bbox', stat['bbox'])
+    pts = [p for s in segs for p in s[9]]
+    stat['bbox'] = [round(min(p[0] for p in pts), 5), round(min(p[1] for p in pts), 5),
+                    round(max(p[0] for p in pts), 5), round(max(p[1] for p in pts), 5)]
 
-    with open(os.path.join(OUT, 'SEG.json'), 'w', encoding='utf-8') as f:
-        json.dump(segs, f, ensure_ascii=False, separators=(',', ':'))
-    with open(os.path.join(OUT, 'SPD.json'), 'w', encoding='utf-8') as f:
-        json.dump(sp_all, f, separators=(',', ':'))
-    with open(os.path.join(OUT, 'STAT.json'), 'w', encoding='utf-8') as f:
-        json.dump(stat, f, ensure_ascii=False, separators=(',', ':'))
+    print('등급군', {RG[i]: gsum[i] for i in range(len(RG))})
+    print('두 랭킹 TOP50 겹침', stat['overlap50'])
 
-    for n in ['SEG', 'SPD', 'STAT']:
-        p = os.path.join(OUT, n + '.json')
-        print(f'  {n}.json {os.path.getsize(p)/1024/1024:.2f} MB')
+    for name, obj in [('SEG', segs), ('SPD', sp_all), ('STAT', stat), ('BG', bg)]:
+        p = os.path.join(OUT, name + '.json')
+        with open(p, 'w', encoding='utf-8') as f:
+            json.dump(obj, f, ensure_ascii=False, separators=(',', ':'))
+        print(f'  {name}.json {os.path.getsize(p)/1024/1024:.2f} MB')
 
 
 if __name__ == '__main__':

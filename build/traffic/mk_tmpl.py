@@ -12,8 +12,8 @@ HTML = """<!doctype html>
 <html lang="ko"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>부산 시간대별 도로 속도 지도 | HayDay</title>
-<meta name="description" content="부산광역시 9,085개 도로 구간의 요일별 퇴근시간대 평균 통행속도. 국토교통부 표준노드링크 + 부산광역시 교통정보서비스센터 구간레벨패턴정보.">
+<title>부산 도로교통망 분석 | HayDay</title>
+<meta name="description" content="부산 9,085개 도로 구간의 속도비·도로위계·지체시간 분석. 요일별 퇴근시간대 통행속도 재생. 국토교통부 표준노드링크 + 부산광역시 교통정보서비스센터 구간레벨패턴정보.">
 __MLCSS__
 __MLJS__
 <style>
@@ -145,6 +145,17 @@ html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);
 .maplibregl-ctrl-attrib{background:rgba(8,10,13,.8)!important;font-size:10.5px}
 .maplibregl-ctrl-attrib a{color:var(--ink3)!important}
 
+
+.br.off{opacity:.35}
+.bn2{width:96px;font-size:12.5px;color:var(--ink3);font-weight:700;flex:none;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bv em{font-style:normal;font-size:10.5px;color:var(--ink3);margin-left:1px}
+.bc{width:46px;text-align:right;font-size:12px;color:var(--ink3);flex:none;
+  font-variant-numeric:tabular-nums}
+.rv em{font-style:normal;font-size:10.5px;color:var(--ink3);margin-left:2px;font-weight:600}
+.tv s{text-decoration:none;font-size:12.5px;color:var(--ink3);font-weight:600;margin-left:5px}
+#mnote{margin-top:9px}
+
 @media (max-width:960px){
   #detail{width:auto!important;margin-right:12px;max-width:none}
   #kpi{grid-template-columns:repeat(2,1fr);row-gap:11px}
@@ -154,7 +165,7 @@ html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);
 <div id="map"></div>
 <div id="hd">
   <b>Hay<i>Day</i></b><div class="sep"></div>
-  <span class="sub">부산 시간대별 도로 속도 · 9,085개 구간 · 요일별 퇴근 피크</span>
+  <span class="sub">부산 도로교통망 분석 · 관측 9,085구간 + 배경 22,792 · 속도비·위계·지체</span>
 </div>
 <div id="wrap"><div id="detail"></div></div>
 <script>
