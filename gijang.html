@@ -455,18 +455,24 @@ renderPop();
   color:var(--sub);font:700 13px/1 inherit;padding:7px 11px;transition:.12s}
 #fsz button:hover{background:rgba(255,255,255,.08);color:var(--ink)}
 #fsz button.on{background:var(--acc);border-color:var(--acc);color:#180c07}
+/* 패널 폭 드래그 손잡이 — 4개 지도 공통 규격 (2026-08-04) */
+#pzr{position:fixed;z-index:60;width:14px;cursor:ew-resize;display:none;
+  align-items:center;justify-content:center}
+#pzr:before{content:'';width:4px;height:44px;border-radius:3px;background:#3a4150;
+  opacity:.9;transition:.12s}
+#pzr:hover:before,#pzr.on:before{background:#ff7a5c;height:96px;opacity:1}
+body.rsz,body.rsz *{cursor:ew-resize!important;user-select:none}
 </style>
 <script id="hayday-fs-js">
 (function(){
-  /* ★ 화면 자동 맞춤 (2026-08-04, 대표 지시로 글자 크기 버튼 제거).
-     버튼으로 고르게 하지 않는다. 열리는 화면 폭에 맞춰 자동으로 맞춘다.
-     글자 배율과 패널 실폭은 분리한다 — 배율만 올렸더니 패널이 화면의 61% 를 먹고
-     지도를 밀어낸 적이 있다(2026-08-01 실측). 지도를 보라고 만든 도구다.
+  /* ★ 화면 자동 맞춤 + 패널 폭 드래그 조절 (2026-08-04, 대표 지시로 글자 크기 버튼 폐지).
+     버튼으로 고르게 하지 않는다. 열리는 화면 폭에 맞춰 자동으로 맞추고, 손잡이로 조절한다.
      🔴 read_page 의 Viewport(2400×1091)는 CSS 픽셀이 아니다. window.innerWidth(1908)로만 계산한다.
-     · 패널 실폭 = 화면의 35% (400~900px)   ← 대표 지시 기준선(첨부 이미지 빨간 선)
-     · 글자 배율 = 1280px 에서 1.00, 2560px 이상 1.75 (선형) */
-  var PW_RATIO=0.35, PW_MIN=400, PW_MAX=900;
-  function autoZoom(iw){return +Math.min(1.75,Math.max(1,1+(iw-1280)/1280*0.75)).toFixed(3);}
+     · 패널 실폭 = 화면의 25~35%. **기본이자 최대가 35%**, 드래그로 25%까지 줄인다.
+     · 글자 배율 = autoZoom(화면폭) × (현재비율/35%) → 폭을 줄이면 글자도 같은 비율로 준다.
+     · 콘텐츠 CSS 폭(cw)은 비율과 무관하게 일정 → 레이아웃 재배치 없이 통째로 축소된다. */
+  var PW_MAX=0.35, PW_MIN=0.25, pRatio=PW_MAX;
+  function autoZoom(iw){return Math.min(1.75,Math.max(1,1+(iw-1280)/1280*0.75));}
   /* 패널이 커진 만큼 지도 중심을 오른쪽으로 민다.
      ⚠ 서구·기장 앱의 map 은 window 속성이 아니지만 같은 전역 스코프라 이름으로 접근된다(실측). */
   function nudge(){
@@ -480,11 +486,38 @@ renderPop();
       map.easeTo({padding:{left:w,top:t,right:26,bottom:26},duration:420});
     }catch(e){}
   }
-  function apply(){var d=document.getElementById('detail');if(!d)return;
+  function grip(){
+    var g=document.getElementById('pzr');
+    if(!g){g=document.createElement('div');g.id='pzr';
+      g.title='드래그해서 패널 폭 조절 (25~35%)';
+      document.body.appendChild(g);
+      g.addEventListener('mousedown',startDrag);
+      g.addEventListener('dblclick',function(){pRatio=PW_MAX;apply();});}
+    return g;
+  }
+  function placeGrip(){
+    var d=document.getElementById('detail'), g=grip();
+    if(!d||window.innerWidth<960||d.offsetParent===null){g.style.display='none';return;}
+    var r=d.getBoundingClientRect();
+    g.style.display='flex';
+    g.style.left=Math.round(r.right-6)+'px';
+    g.style.top=Math.round(r.top)+'px';
+    g.style.height=Math.round(r.height)+'px';
+  }
+  function startDrag(e){
+    e.preventDefault();
+    var d=document.getElementById('detail');if(!d)return;
+    var left=d.getBoundingClientRect().left, iw=window.innerWidth;
+    var g=grip();g.classList.add('on');document.body.classList.add('rsz');
+    function mv(ev){pRatio=Math.min(PW_MAX,Math.max(PW_MIN,(ev.clientX-left)/iw));apply(true);}
+    function up(){document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up);
+      g.classList.remove('on');document.body.classList.remove('rsz');setTimeout(nudge,60);}
+    document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up);
+  }
+  function apply(skipMap){var d=document.getElementById('detail');if(!d)return;
     var iw=window.innerWidth||1440, narrow=iw<960;
-    var z=narrow?1:autoZoom(iw);
-    var pw=Math.max(PW_MIN,Math.min(PW_MAX,Math.round(iw*PW_RATIO)));
-    var cw=Math.round(pw/z);
+    var z=narrow?1:+(autoZoom(iw)*(pRatio/PW_MAX)).toFixed(3);
+    var cw=Math.round(iw*PW_MAX/autoZoom(iw));
     d.style.zoom=z;
     if(narrow)d.style.removeProperty('width');
     else d.style.setProperty('width',cw+'px','important');
@@ -492,7 +525,8 @@ renderPop();
     d.style.maxHeight='calc((100vh - 190px)/'+z+')';
     var nv=document.getElementById('navlist');
     if(nv)nv.style.zoom=(1+(z-1)*0.62).toFixed(3);
-    setTimeout(nudge,300);}
+    placeGrip();
+    if(!skipMap)setTimeout(nudge,300);}
   function mount(n){
     var h=document.getElementById('detail-h');
     if(!h){if((n||0)<80)return setTimeout(function(){mount((n||0)+1);},250);return;}
@@ -500,12 +534,12 @@ renderPop();
     var old=document.getElementById('fsz'); if(old&&old.parentNode)old.parentNode.removeChild(old);
     document.addEventListener('click',function(e){
       if(e.target&&e.target.closest&&(e.target.closest('.navitem')||e.target.closest('#detail-close')))
-        setTimeout(nudge,320);},true);
+        {setTimeout(nudge,320);setTimeout(placeGrip,340);}},true);
     window.addEventListener('resize',function(){clearTimeout(window.__fsrz);
-      window.__fsrz=setTimeout(apply,240);});
+      window.__fsrz=setTimeout(function(){apply();},240);});
     apply();
-    setTimeout(nudge,1500);
-    setTimeout(nudge,3200);
+    setTimeout(function(){placeGrip();nudge();},1500);
+    setTimeout(function(){placeGrip();nudge();},3200);
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){mount(0);});
   else mount(0);
