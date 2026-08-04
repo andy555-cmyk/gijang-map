@@ -195,6 +195,44 @@ def main():
     b50 = {r['i'] for r in sorted(rr, key=lambda x: x['ratio'])[:50]}
     stat['overlap50'] = len(a50 & b50)
 
+    # ── 24시간 프로파일 ─────────────────────────────────────────────
+    # 🔑 패턴정보(18:00~18:55)로는 하루가 안 보인다. 그래서 다른 파일을 붙인다.
+    #    부산광역시_지능형교통정보_DSRC구간교통정보(15041717)는 주요 간선 138구간을
+    #    2026-06-30 하루 00:00~23:45(15분 96스텝) 전 시간대로 담고 있다(실측).
+    # ⚠ 구간명 체계가 링크정보와 달라(‘3부두-구덕교차로’ 식) 좌표를 붙일 수 없다.
+    #    그래서 지도가 아니라 '곡선'으로만 쓴다. 없는 좌표를 추정해 그리지 않는다.
+    h24 = None
+    p24 = os.path.join(BASE, 'conn1.csv')
+    if os.path.exists(p24):
+        rows24 = read_csv(p24)
+        byt = defaultdict(list)
+        byseg = defaultdict(dict)
+        for x in rows24:
+            try:
+                v = int(x['속도(시속)'])
+            except (ValueError, TypeError):
+                continue
+            if v <= 0:
+                continue
+            hm = x['가공일시'][11:16]
+            byt[hm].append(v)
+            byseg[x['구간명'].strip()][hm] = v
+        tt = sorted(byt)
+        allc = [round(statistics.mean(byt[t]), 1) for t in tt]
+        lo = min(range(len(tt)), key=lambda i: allc[i])
+        hi = max(range(len(tt)), key=lambda i: allc[i])
+        # 하루 평균이 낮은 구간 TOP 6 — 곡선을 겹쳐 그린다
+        rank24 = sorted(((statistics.mean(v.values()), k) for k, v in byseg.items()
+                         if len(v) >= len(tt) * 0.8))[:6]
+        h24 = {
+            'date': sorted({x['가공일시'][:10] for x in rows24})[0],
+            'n_seg': len(byseg), 'times': tt, 'all': allc,
+            'lo': [tt[lo], allc[lo]], 'hi': [tt[hi], allc[hi]],
+            'segs': [[k, [byseg[k].get(t) for t in tt], round(m, 1)] for m, k in rank24],
+        }
+        print(f"24h 프로파일 {h24['n_seg']}구간 {len(tt)}스텝 · 최저 {h24['lo']} 최고 {h24['hi']}")
+    stat['h24'] = h24
+
     pts = [p for s in segs for p in s[9]]
     stat['bbox'] = [round(min(p[0] for p in pts), 5), round(min(p[1] for p in pts), 5),
                     round(max(p[0] for p in pts), 5), round(max(p[1] for p in pts), 5)]

@@ -352,6 +352,8 @@ function renderShell() {
       <div id="rank"></div>
     </div>
 
+    <div class="sec" id="h24sec"></div>
+
     <div class="sec">
       <div class="lb">보기</div>
       <div class="chips">
@@ -371,7 +373,7 @@ function renderShell() {
       </div>
     </div>`;
   renderMetric(); renderKpi(); renderRg(); renderDays(); renderLegend();
-  renderBar(); renderRank(); updateHead(); syncPlay();
+  renderBar(); renderRank(); render24(); updateHead(); syncPlay();
 }
 
 const METRICS = [
@@ -457,6 +459,59 @@ function renderRank() {
   }).join('');
   document.getElementById('rank').innerHTML = rows ||
     '<div class="note">선택한 위계에 해당하는 구간이 없다. 위계 필터를 켜라.</div>';
+}
+
+
+/* ── 24시간 프로파일 ───────────────────────────────────────────────
+   패턴정보는 18:00~18:55 뿐이라 하루가 안 보인다. 그래서 다른 파일을 붙였다.
+   DSRC구간교통정보(15041717) — 주요 간선 138구간의 2026-06-30 00:00~23:45(15분).
+   ⚠ 구간명 체계가 달라 좌표를 붙일 수 없다. 그래서 지도가 아니라 곡선으로만 쓴다. */
+function render24() {
+  const el = document.getElementById('h24sec');
+  if (!el) return;
+  const h = ST.h24;
+  if (!h) { el.innerHTML = ''; return; }
+  const W = 660, H = 150, P = 26;
+  const vals = h.all, n = vals.length;
+  const lo = Math.floor(Math.min(...vals) / 5) * 5;
+  const hi = Math.ceil(Math.max(...vals) / 5) * 5;
+  const X = i => P + i / (n - 1) * (W - P * 2);
+  const Y = v => H - 18 - (v - lo) / (hi - lo) * (H - 44);
+  const pts = vals.map((v, i) => `${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ');
+  const area = `${X(0)},${H - 18} ` + pts + ` ${X(n - 1)},${H - 18}`;
+  /* 시간 눈금 — 3시간마다 */
+  const ticks = [];
+  for (let i = 0; i < n; i++) {
+    const hh = h.times[i].slice(0, 2);
+    if (h.times[i].slice(3) === '00' && +hh % 3 === 0) ticks.push([X(i), hh]);
+  }
+  const iLo = vals.indexOf(h.lo[1]), iHi = vals.indexOf(h.hi[1]);
+  const seg18 = h.times.indexOf('18:00');
+  el.innerHTML = `
+    <div class="lb">24시간 속도 곡선 <span class="sub">주요 간선 ${nf(h.n_seg)}구간 · ${h.date}</span></div>
+    <svg viewBox="0 0 ${W} ${H}" class="h24">
+      <defs><linearGradient id="g24" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#e0672c" stop-opacity=".28"/>
+        <stop offset="100%" stop-color="#e0672c" stop-opacity="0"/>
+      </linearGradient></defs>
+      <polygon points="${area}" fill="url(#g24)"/>
+      <polyline points="${pts}" fill="none" stroke="#e0672c" stroke-width="2.2"
+        stroke-linejoin="round" stroke-linecap="round"/>
+      ${seg18 >= 0 ? `<line x1="${X(seg18)}" y1="14" x2="${X(seg18)}" y2="${H - 18}"
+        stroke="#3987e5" stroke-width="1.4" stroke-dasharray="3 3"/>
+        <text x="${X(seg18) + 5}" y="24" class="t24b">지도 데이터 18:00</text>` : ''}
+      <circle cx="${X(iLo)}" cy="${Y(vals[iLo])}" r="4" fill="#a8380f"/>
+      <text x="${X(iLo)}" y="${Y(vals[iLo]) + 17}" class="t24r" text-anchor="middle">${h.lo[0]} ${h.lo[1]}</text>
+      <circle cx="${X(iHi)}" cy="${Y(vals[iHi])}" r="4" fill="#3987e5"/>
+      <text x="${X(iHi)}" y="${Y(vals[iHi]) - 9}" class="t24n" text-anchor="middle">${h.hi[0]} ${h.hi[1]}</text>
+      ${ticks.map(t => `<text x="${t[0]}" y="${H - 5}" class="t24" text-anchor="middle">${t[1]}</text>`).join('')}
+    </svg>
+    <div class="note">
+      하루 중 가장 막히는 시각은 <b>${h.lo[0]} (${h.lo[1]}km/h)</b>, 가장 뚫리는 시각은
+      <b>${h.hi[0]} (${h.hi[1]}km/h)</b>. 위 지도의 18:00 자료는 피크를 조금 지난 시점이다.
+      이 곡선은 <b>DSRC 주요 간선 ${nf(h.n_seg)}구간</b> 실측이며,
+      구간명 체계가 달라 <b>지도에는 올리지 않았다</b>(없는 좌표를 추정해 그리지 않는다).
+    </div>`;
 }
 
 function updateHead() {

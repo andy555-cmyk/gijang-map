@@ -146,6 +146,12 @@ html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);
 .maplibregl-ctrl-attrib a{color:var(--ink3)!important}
 
 
+.h24{width:100%;height:auto;display:block;margin:2px 0 4px}
+.t24{font-size:9px;fill:var(--ink3)}
+.t24r{font-size:10.5px;fill:#f0a077;font-weight:800}
+.t24n{font-size:10.5px;fill:#7fb2f0;font-weight:800}
+.t24b{font-size:9.5px;fill:#7fb2f0;font-weight:700}
+
 .br.off{opacity:.35}
 .bn2{width:96px;font-size:12.5px;color:var(--ink3);font-weight:700;flex:none;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
