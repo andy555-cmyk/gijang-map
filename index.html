@@ -12,7 +12,8 @@
 h1{font-size:30px;line-height:1.3;letter-spacing:-.03em;margin:26px 0 10px}
 .lead{color:var(--sub);font-size:14.5px;line-height:1.75;max-width:660px;margin:0}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:34px}
-@media(min-width:1100px){.grid{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:1100px){.grid{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:1420px){.grid{grid-template-columns:repeat(4,1fr)}}
 @media(max-width:760px){.grid{grid-template-columns:1fr}h1{font-size:24px}}
 .card{display:block;text-decoration:none;color:inherit;background:var(--panel);border:1px solid var(--line);
  border-radius:16px;padding:20px 20px 18px;transition:.14s;box-shadow:0 12px 40px rgba(0,0,0,.35)}
@@ -66,15 +67,25 @@ h1{font-size:30px;line-height:1.3;letter-spacing:-.03em;margin:26px 0 10px}
       <div class="kv"><span>대상지</span><b>공업지역 17폴리곤 · 내 건물 5,830동</b></div>
       <div class="go">열기 →</div>
     </a>
+    <a class="card" href="./busan-traffic.html">
+      <div class="tag">Region 04 · 부산 전역</div>
+      <h2>부산 도로교통망 분석</h2>
+      <div class="sub">퇴근 피크 통행속도 · 속도비 · 도로위계</div>
+      <div class="kv"><span>관측 구간</span><b>9,085구간 · 배경 22,792</b></div>
+      <div class="kv"><span>분석 지표</span><b>속도비 · 절대속도 · 지체시간</b></div>
+      <div class="kv"><span>도로 위계</span><b>고속 · 국도 · 광역시도 · 시군도</b></div>
+      <div class="kv"><span>재생 기능</span><b>요일 7 × 18:00~18:55 · 흐름 애니메이션</b></div>
+      <div class="go">열기 →</div>
+    </a>
   </div>
 
   <div class="feat"><h3>엔진 공통 기능</h3>
   <p>건물 단위 3D 압출과 클릭 상세, 층수·용도지역·노후도 3종 현황분석 전환, 노후 밴드별 개별 필터,
   층수 필터와 사업구역 내 건물만 보기. 서구판에는 <b>빈집밀집구역 3요건 자동판정기</b>와
   지도를 클릭해 반경을 그리면 구역 요건을 실시간 집계하는 <b>구역 시뮬레이터</b>,
-  KOSIS 주민등록 인구 시계열(2011~2025)이 추가되어 있습니다. 사하구판은 <b>노후 산단</b>용으로, 빈집 레이어 대신 <b>등록공장 1,161개의 위치·업종 분포와 밀도(열분포)</b>, 공업지역 기반 대상지, 마스터플랜 A~G 단위사업을 담았습니다. 레이어 선택창과 값 표시창을 <b>좌우로 분리</b>했습니다.</p></div>
+  KOSIS 주민등록 인구 시계열(2011~2025)이 추가되어 있습니다. 사하구판은 <b>노후 산단</b>용으로, 빈집 레이어 대신 <b>등록공장 1,161개의 위치·업종 분포와 밀도(열분포)</b>, 공업지역 기반 대상지, 마스터플랜 A~G 단위사업을 담았습니다. 레이어 선택창과 값 표시창을 <b>좌우로 분리</b>했습니다. 부산 도로교통망 분석판은 지역 진단이 아니라 <b>도로망 자체</b>를 다룹니다. 국토교통부 표준노드링크에 부산시 관측 통행속도를 조인해 <b>제한속도 대비 속도비</b>로 위계가 다른 도로를 한 잣대에 놓고, 도로 위계를 끄고 켜서 간선만 볼 수 있으며, 속도가 관측되지 않는 도로는 어두운 배경망으로 함께 깔아 도로망 형태가 끊기지 않게 했습니다.</p></div>
 
   <div class="foot">데이터: VWorld 건물통합정보·연속지적도·용도지역 · 건축물대장 표제부(준공연도·지상층수) ·
-  KOSIS 주민등록인구 · 부산 서구 고시 제2025-54호 빈집정비계획(2025) · 빈집애 누리집 법정동별 빈집(2026) · 위성영상 Esri · <b>부산광역시 제조업 공장등록현황(2025-12-31)</b><br/>
+  KOSIS 주민등록인구 · 부산 서구 고시 제2025-54호 빈집정비계획(2025) · 빈집애 누리집 법정동별 빈집(2026) · 위성영상 Esri · <b>부산광역시 제조업 공장등록현황(2025-12-31)</b> · <b>국토교통부 표준노드링크(2026-07-16)</b> · <b>부산광역시 교통정보서비스센터 지능형교통정보 구간레벨패턴정보(2026-06)</b><br/>
   서구판 층수는 건축물대장 지상층수 기준입니다. 준공연도 미확인 물량 및 구역 경계 추정 구간은 각 화면 안에 명시되어 있습니다.<br/>사하구판의 준공연도·건축물용도·연면적은 국토부 건축물대장 오픈API(건축HUB)가 공공데이터포털 개편(2026-07-29~08-02)으로 응답하지 않아 <b>미확보</b> 상태이며, 화면 안에 그대로 표기했습니다. 노후도 30년 판정은 해당 값 확보 후 표시됩니다.<br/>빈집 수치는 조사주체·정의·시점에 따라 서구 고시 683호와 빈집애 1,855호로 갈립니다. 두 값은 별개 지표로 분리 표기되며 합산·비교 불가입니다.</div>
 </div></body></html>
