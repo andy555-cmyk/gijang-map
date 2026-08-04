@@ -468,10 +468,10 @@ body.rsz,body.rsz *{cursor:ew-resize!important;user-select:none}
   /* ★ 화면 자동 맞춤 + 패널 폭 드래그 조절 (2026-08-04, 대표 지시로 글자 크기 버튼 폐지).
      버튼으로 고르게 하지 않는다. 열리는 화면 폭에 맞춰 자동으로 맞추고, 손잡이로 조절한다.
      🔴 read_page 의 Viewport(2400×1091)는 CSS 픽셀이 아니다. window.innerWidth(1908)로만 계산한다.
-     · 패널 실폭 = 화면의 25~35%. **기본이자 최대가 35%**, 드래그로 25%까지 줄인다.
+     · 패널 실폭 = 화면의 25~35%. **진입 기본값은 25%**, 드래그로 35%까지 넓힌다.
      · 글자 배율 = autoZoom(화면폭) × (현재비율/35%) → 폭을 줄이면 글자도 같은 비율로 준다.
      · 콘텐츠 CSS 폭(cw)은 비율과 무관하게 일정 → 레이아웃 재배치 없이 통째로 축소된다. */
-  var PW_MAX=0.35, PW_MIN=0.25, pRatio=PW_MAX;
+  var PW_MAX=0.35, PW_MIN=0.25, pRatio=PW_MIN;   /* 진입 기본값 = 25% (대표 지시 08-04) */
   function autoZoom(iw){return Math.min(1.75,Math.max(1,1+(iw-1280)/1280*0.75));}
   /* 패널이 커진 만큼 지도 중심을 오른쪽으로 민다.
      ⚠ 서구·기장 앱의 map 은 window 속성이 아니지만 같은 전역 스코프라 이름으로 접근된다(실측). */
@@ -489,10 +489,10 @@ body.rsz,body.rsz *{cursor:ew-resize!important;user-select:none}
   function grip(){
     var g=document.getElementById('pzr');
     if(!g){g=document.createElement('div');g.id='pzr';
-      g.title='드래그해서 패널 폭 조절 (25~35%)';
+      g.title='드래그해서 패널 폭 조절 (25~35%, 더블클릭 = 기본 25%)';
       document.body.appendChild(g);
       g.addEventListener('mousedown',startDrag);
-      g.addEventListener('dblclick',function(){pRatio=PW_MAX;apply();});}
+      g.addEventListener('dblclick',function(){pRatio=PW_MIN;apply();});}
     return g;
   }
   function placeGrip(){
