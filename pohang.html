@@ -264,7 +264,7 @@ document.getElementById('rleg').innerHTML='죽도시장 → <b>칠성로·칠성
 
 const FOCUS=`<button class="zf" data-f="all">전체 보기</button>`
  +ZONES.zones.map(z=>`<button class="zf" data-f="${z.c}" style="border-color:${z.col};color:${z.col}">${z.c}권역</button>`).join('')
- +`<button class="md on" data-l="mask">바깥 어둡게</button>`;
+ +`<button class="md on" data-l="mask">바깥 어둡게</button><button class="md" data-l="tilt">3D 기울이기</button>`;
 document.getElementById('focus').innerHTML=FOCUS;
 document.getElementById('focus2').innerHTML=FOCUS;
 
@@ -316,7 +316,7 @@ const map=new maplibregl.Map({container:'map',
           {id:'dim',type:'background',paint:{'background-color':'#070a0f','background-opacity':0.30}}],
   sky:{'sky-color':'#0f1826','horizon-color':'#243347','fog-color':'#0b0e13',
        'fog-ground-blend':0.5,'horizon-fog-blend':0.6,'sky-horizon-blend':0.8}},
- center:[129.3639,36.0367],zoom:15.2,pitch:52,bearing:-18,maxPitch:80,antialias:true});
+ center:[129.3639,36.0367],zoom:15.2,pitch:0,bearing:0,maxPitch:80,antialias:true});
 map.addControl(new maplibregl.NavigationControl({visualizePitch:true}),'bottom-right');
 map.addControl(new maplibregl.ScaleControl({unit:'metric'}),'bottom-left');
 
@@ -326,7 +326,7 @@ const JUK=RINGC;   // 반경 링 중심 = 사업대상지 중심 (발주처 위�
 function pad(){const w=document.getElementById('detail').getBoundingClientRect().width;
  return {left:w+50,top:70,right:70,bottom:70};}
 
-let ready=false,bootT=0,MK=[];
+let ready=false,bootT=0,MK=[],tilt3d=false;
 function boot(){
   if(ready)return;
   if(!map.isStyleLoaded()){if(!bootT)bootT=+new Date();
@@ -468,7 +468,7 @@ function focusTo(f,instant){
   let bb=ZB;
   if(f!=='all'&&f!=='D'){const z=ZONES.zones.find(z=>z.c===f); if(z)bb=bboxOf(z.geom);}
   if(f==='D'){bb=[[ZONES.D.lon-0.004,ZONES.D.lat-0.003],[ZONES.D.lon+0.004,ZONES.D.lat+0.003]];}
-  map.fitBounds(bb,{padding:pad(),pitch:52,bearing:-18,duration:instant?0:900,maxZoom:17.4});
+  map.fitBounds(bb,{padding:pad(),pitch:tilt3d?52:0,bearing:tilt3d?-18:0,duration:instant?0:900,maxZoom:17.4});
   const on=(f==='all'||f==='D')?null:['==',['get','c'],f];
   ['zonef','zoneh','zonel'].forEach(id=>{if(map.getLayer(id))map.setFilter(id,on);});
   if(map.getLayer('maskf')){
@@ -491,6 +491,7 @@ document.body.addEventListener('click',ev=>{
   document.querySelectorAll(`button.md[data-l="${k}"]`).forEach(x=>x.classList.toggle('on',on));
   if(!ready)return;
   if(k==='mask'){map.setLayoutProperty('maskf','visibility',on?'visible':'none');return;}
+  if(k==='tilt'){tilt3d=on; focusTo(curFocus); return;}
   if(k==='zonly'){
     map.setFilter('bld3d',on?['!=',['get','z'],'']:null);
     map.setFilter('store',on?['!=',['get','z'],'']:storeFilter());
