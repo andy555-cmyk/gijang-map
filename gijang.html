@@ -545,4 +545,111 @@ body.rsz,body.rsz *{cursor:ew-resize!important;user-select:none}
   else mount(0);
 })();
 </script>
+<script>
+/* ── 베이스맵 전환 (2026-08-09) ──────────────────────────────────────────
+   호진님 지시(08-06 카페 47:57): "맥박스의 베이스 지도를 컬러를 바꿀 수 있잖아 뭐 흑백 그런 걸 한번 활용해"
+
+   ⚠ 실측 2026-08-09: 이 지도들에 **맵박스는 연결돼 있지 않았다.** 베이스는 ArcGIS 위성 1종뿐이었다.
+      토큰이 없어도 오늘 흑백이 되도록 무료 타일(CARTO/OSM)로 먼저 넣는다.
+      MAPBOX_TOKEN 에 pk 토큰을 넣으면 맵박스 스타일로 자동 교체된다. 그 한 줄만 바꾸면 된다.
+
+   이 블록은 5개 지도(gijang·seogu·saha·pohang·busan-traffic)에 같은 내용으로 들어간다.
+   앱 코드를 건드리지 않는다 — 지도 로드 후 레이어를 얹고 버튼만 붙인다.
+   ───────────────────────────────────────────────────────────────────── */
+(function () {
+  var MAPBOX_TOKEN = '';   /* ← 여기에 pk.… 를 넣으면 맵박스로 바뀐다 */
+
+  var USE_MB = /^pk\./.test(MAPBOX_TOKEN);
+  function carto(s) {
+    return ['a', 'b', 'c', 'd'].map(function (h) {
+      return 'https://' + h + '.basemaps.cartocdn.com/' + s + '/{z}/{x}/{y}@2x.png';
+    });
+  }
+  function mb(s) {
+    return ['https://api.mapbox.com/styles/v1/mapbox/' + s + '/tiles/512/{z}/{x}/{y}@2x?access_token=' + MAPBOX_TOKEN];
+  }
+  var ATTR = USE_MB
+    ? '베이스맵 (c) Mapbox (c) OpenStreetMap'
+    : '베이스맵 (c) OpenStreetMap (c) CARTO';
+
+  var EXTRA = [
+    { id: '_bmdk', label: '흑백', tiles: USE_MB ? mb('dark-v11') : carto('dark_all') },
+    { id: '_bmlt', label: '백지도', tiles: USE_MB ? mb('light-v11') : carto('light_all') }
+  ];
+
+  function boot(map) {
+    if (document.getElementById('bmsw')) return;
+    /* 기존 베이스 레이어 = 스타일 맨 앞의 raster/background 연속 구간.
+       데이터 레이어가 시작되는 지점 앞에 우리 레이어를 끼운다. */
+    var lyrs = map.getStyle().layers || [];
+    var baseIds = [], beforeId = null;
+    for (var i = 0; i < lyrs.length; i++) {
+      if (lyrs[i].type === 'raster' || lyrs[i].type === 'background') { baseIds.push(lyrs[i].id); }
+      else { beforeId = lyrs[i].id; break; }
+    }
+    if (!baseIds.length) return;
+
+    EXTRA.forEach(function (b) {
+      if (map.getSource(b.id)) return;
+      map.addSource(b.id, { type: 'raster', tiles: b.tiles, tileSize: 256, maxzoom: 19, attribution: ATTR });
+      map.addLayer({ id: b.id, type: 'raster', source: b.id, layout: { visibility: 'none' } }, beforeId || undefined);
+    });
+
+    function vis(id, on) {
+      if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', on ? 'visible' : 'none');
+    }
+    function setBase(pick) {
+      baseIds.forEach(function (id) { vis(id, pick === 'sat'); });
+      EXTRA.forEach(function (b) { vis(b.id, pick === b.id); });
+      Array.prototype.forEach.call(box.children, function (btn) {
+        btn.style.background = btn.dataset.k === pick ? '#e0672c' : 'rgba(255,255,255,.04)';
+        btn.style.color = btn.dataset.k === pick ? '#160b05' : '#93a3b6';
+        btn.style.borderColor = btn.dataset.k === pick ? '#e0672c' : 'rgba(255,255,255,.09)';
+      });
+    }
+
+    var box = document.createElement('div');
+    box.id = 'bmsw';
+    box.style.cssText = 'position:absolute;top:66px;right:12px;z-index:30;display:flex;gap:5px;' +
+      'font:700 12px/1 -apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;';
+    [{ k: 'sat', label: '위성' }].concat(EXTRA.map(function (b) { return { k: b.id, label: b.label }; }))
+      .forEach(function (o) {
+        var btn = document.createElement('button');
+        btn.type = 'button'; btn.dataset.k = o.k; btn.textContent = o.label;
+        btn.style.cssText = 'cursor:pointer;padding:6px 11px;border-radius:20px;border:1px solid rgba(255,255,255,.09);' +
+          'background:rgba(255,255,255,.04);color:#93a3b6;font:inherit;backdrop-filter:blur(6px);';
+        btn.onclick = function () { setBase(o.k); };
+        box.appendChild(btn);
+      });
+    (map.getContainer().parentNode || document.body).appendChild(box);
+    /* 지도마다 우상단에 이미 뭔가 떠 있는 곳이 있다(포항 #badge). 겹치면 그 아래로 내린다.
+       전체폭 컨테이너와 클릭 안 받는 요소는 건너뛴다. */
+    (function nudge() {
+      var r = box.getBoundingClientRect(), low = 0;
+      Array.prototype.forEach.call(document.body.children, function (el) {
+        if (el === box || !el.getClientRects().length) return;
+        var q = el.getBoundingClientRect();
+        if (q.width > window.innerWidth * 0.8) return;
+        try { if (getComputedStyle(el).pointerEvents === 'none') return; } catch (e) {}
+        if (q.right < r.left || q.left > r.right || q.bottom < r.top || q.top > r.bottom) return;
+        if (q.bottom > low) low = q.bottom;
+      });
+      if (low > r.top) box.style.top = Math.round(low + 8) + 'px';
+    })();
+    setBase('sat');
+  }
+
+  /* ⚠ 실측 2026-08-09: 'load' 를 기다리면 안 된다. 타일이 못 뜨는 환경(file:// 로컬 검증 등)에서는
+        map.isStyleLoaded() 가 끝내 false 라서 'load' 가 영영 안 온다. 스타일 JSON 만 파싱되면 레이어는 얹힌다. */
+  var tries = 0;
+  function wait() {
+    var m = (typeof map !== 'undefined' && map) ? map : (window.map || null);
+    var st = null;
+    try { st = m && m.getStyle ? m.getStyle() : null; } catch (e) { st = null; }
+    if (!st || !st.layers || !st.layers.length) { if (++tries < 200) setTimeout(wait, 120); return; }
+    try { boot(m); } catch (e) { if (++tries < 200) { setTimeout(wait, 200); } else { console.warn('[bmsw]', e); } }
+  }
+  wait();
+})();
+</script>
 </body></html>
