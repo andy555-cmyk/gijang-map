@@ -728,6 +728,9 @@ document.addEventListener('keydown', function(e){ if(e.key==='Escape' && documen
 </script>
 
 <style id="pzr-css">
+/* 정보란 폭에 맞춰 글자·칸 크기도 같이 커지고 작아진다 (2026-08-15) */
+#detail{--dz:1}
+#detail>*{zoom:var(--dz)}
 #pzr{position:fixed;z-index:60;width:16px;cursor:ew-resize;display:none;
   align-items:center;justify-content:center}
 #pzr:before{content:'';width:4px;height:48px;border-radius:3px;background:#3a4150;opacity:.9;transition:.12s}
@@ -756,8 +759,13 @@ body.pfold #detail{display:none!important}
   var MINR=0.18, MAXR=0.45, DEF=0.25, ratio=DEF, folded=false;
   function d(){return document.getElementById('detail');}
   function mapObj(){return (typeof map!=='undefined'&&map)?map:(window.map||null);}
+  var BASEW=340, ZMIN=0.80, ZMAX=1.45;
   function apply(px){
     var el=d(); if(!el) return;
+    /* 폭이 좁아지면 글자도 같이 작아진다 — 폭만 줄고 내용이 그대로면 줄바꿈이 깨진다 */
+    var z=Math.max(ZMIN,Math.min(ZMAX, px/BASEW));
+    z=Math.round(z*1000)/1000;
+    el.style.setProperty('--dz', z);
     el.style.width=px+'px'; el.style.minWidth='0';
     document.documentElement.style.setProperty('--pw',px+'px');
     var m=mapObj(); if(m&&m.resize) setTimeout(function(){m.resize();},0);
