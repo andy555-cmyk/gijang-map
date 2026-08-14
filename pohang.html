@@ -726,4 +726,104 @@ function hdPrint(){
 }
 document.addEventListener('keydown', function(e){ if(e.key==='Escape' && document.body.classList.contains('pmode')) hdPrint(); });
 </script>
+
+<style id="pzr-css">
+#pzr{position:fixed;z-index:60;width:16px;cursor:ew-resize;display:none;
+  align-items:center;justify-content:center}
+#pzr:before{content:'';width:4px;height:48px;border-radius:3px;background:#3a4150;opacity:.9;transition:.12s}
+#pzr:hover:before,#pzr.on:before{background:#ff7a5c;height:120px;opacity:1}
+#pzr .ar{position:absolute;top:calc(50% - 46px);font:700 12px/1 system-ui;color:#ff7a5c;
+  letter-spacing:3px;white-space:nowrap;pointer-events:none;opacity:.9}
+#pfold{position:fixed;z-index:61;width:22px;height:46px;padding:0;cursor:pointer;
+  border:1px solid rgba(255,255,255,.16);border-left:0;border-radius:0 9px 9px 0;
+  background:rgba(13,17,23,.94);color:#c9d1d9;font:700 11px/1 system-ui;display:none}
+#pfold:hover{color:#ff7a5c;border-color:#ff7a5c}
+body.rsz,body.rsz *{cursor:ew-resize!important;user-select:none}
+body.pfold #detail{display:none!important}
+</style>
+<script id="pzr-js">
+/* 왼쪽 정보란 폭 조절 — 6개 지도 공통 규격
+   · 드래그로 18~45% · 더블클릭이면 기본 25% · 접기 단추로 통째로 숨김
+   · 마지막 폭은 이 브라우저에 기억된다 */
+(function(){
+  var MINR=0.18, MAXR=0.45, DEF=0.25, ratio=DEF, folded=false;
+  function d(){return document.getElementById('detail');}
+  function mapObj(){return (typeof map!=='undefined'&&map)?map:(window.map||null);}
+  function apply(px){
+    var el=d(); if(!el) return;
+    el.style.width=px+'px'; el.style.minWidth='0';
+    document.documentElement.style.setProperty('--pw',px+'px');
+    var m=mapObj(); if(m&&m.resize) setTimeout(function(){m.resize();},0);
+  }
+  function setR(r,save){
+    ratio=Math.min(MAXR,Math.max(MINR,r));
+    apply(Math.round(window.innerWidth*ratio));
+    if(save!==false){try{localStorage.setItem('envmap.pw',ratio);}catch(e){}}
+    place();
+  }
+  var grip,fold;
+  function make(){
+    grip=document.createElement('div'); grip.id='pzr';
+    grip.title='드래그해서 정보란 폭 조절 (18~45%, 더블클릭 = 기본 25%)';
+    grip.innerHTML='<span class="ar">◁▷</span>';
+    document.body.appendChild(grip);
+    grip.addEventListener('mousedown',start);
+    grip.addEventListener('dblclick',function(){setR(DEF);});
+    fold=document.createElement('button'); fold.id='pfold';
+    fold.title='정보란 접기·펴기'; fold.textContent='◀';
+    document.body.appendChild(fold);
+    fold.onclick=function(){
+      folded=!folded; document.body.classList.toggle('pfold',folded);
+      fold.textContent=folded?'▶':'◀';
+      document.documentElement.style.setProperty('--pw',folded?'0px':Math.round(window.innerWidth*ratio)+'px');
+      var m=mapObj(); if(m&&m.resize) setTimeout(function(){m.resize();},30);
+      place();
+    };
+  }
+  function place(){
+    if(!grip) return;
+    var el=d();
+    if(folded||!el||window.innerWidth<960){
+      grip.style.display='none';
+      if(fold){fold.style.display='block';fold.style.left='0px';
+        fold.style.top=Math.round(window.innerHeight/2-23)+'px';}
+      return;
+    }
+    var r=el.getBoundingClientRect();
+    grip.style.display='flex';
+    grip.style.left=Math.round(r.right-8)+'px';
+    grip.style.top=Math.round(r.top)+'px';
+    grip.style.height=Math.round(r.height)+'px';
+    fold.style.display='block';
+    fold.style.left=Math.round(r.right)+'px';
+    fold.style.top=Math.round(r.top+r.height/2-23)+'px';
+  }
+  function start(e){
+    e.preventDefault(); var el=d(); if(!el) return;
+    var left=el.getBoundingClientRect().left, iw=window.innerWidth;
+    grip.classList.add('on'); document.body.classList.add('rsz');
+    function mv(ev){ setR((ev.clientX-left)/iw,false); }
+    function up(){
+      document.removeEventListener('mousemove',mv);
+      document.removeEventListener('mouseup',up);
+      grip.classList.remove('on'); document.body.classList.remove('rsz');
+      try{localStorage.setItem('envmap.pw',ratio);}catch(e){}
+      var m=mapObj(); if(m&&m.resize) setTimeout(function(){m.resize();},40);
+    }
+    document.addEventListener('mousemove',mv);
+    document.addEventListener('mouseup',up);
+  }
+  function boot(){
+    if(!d()){ setTimeout(boot,200); return; }
+    make();
+    var saved=null; try{saved=localStorage.getItem('envmap.pw');}catch(e){}
+    setR(saved?parseFloat(saved):DEF,false);
+    window.addEventListener('resize',function(){
+      clearTimeout(window.__pzr); window.__pzr=setTimeout(function(){setR(ratio,false);},200);});
+    setInterval(place,700);
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot);
+  else boot();
+})();
+</script>
 </body></html>
