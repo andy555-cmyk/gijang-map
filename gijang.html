@@ -712,6 +712,13 @@ document.addEventListener('keydown', function(e){ if(e.key==='Escape' && documen
 #pfold:hover{color:#ff7a5c;border-color:#ff7a5c}
 body.rsz,body.rsz *{cursor:ew-resize!important;user-select:none}
 body.pfold #detail{display:none!important}
+/* 스크롤막대 — 6개 지도 공통 (부산 교통망 규격) */
+#detail,.pane,#left,#right,.scroll{scrollbar-width:thin;scrollbar-color:#333b49 transparent}
+#detail::-webkit-scrollbar,.pane::-webkit-scrollbar,#left::-webkit-scrollbar,#right::-webkit-scrollbar{width:9px;height:9px}
+#detail::-webkit-scrollbar-track,.pane::-webkit-scrollbar-track,#left::-webkit-scrollbar-track,#right::-webkit-scrollbar-track{background:transparent}
+#detail::-webkit-scrollbar-thumb,.pane::-webkit-scrollbar-thumb,#left::-webkit-scrollbar-thumb,#right::-webkit-scrollbar-thumb{background:#333b49;border-radius:9px}
+#detail::-webkit-scrollbar-thumb:hover,.pane::-webkit-scrollbar-thumb:hover{background:#4a5464}
+#detail::-webkit-scrollbar-corner{background:transparent}
 </style>
 <script id="pzr-js">
 /* 왼쪽 정보란 폭 조절 — 6개 지도 공통 규격
