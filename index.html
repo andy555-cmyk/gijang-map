@@ -46,12 +46,47 @@ h1{font-size:30px;line-height:1.3;letter-spacing:-.03em;margin:26px 0 10px}
  background:rgba(255,255,255,.09);color:var(--sub);padding:3px 8px;border-radius:999px}
 .sechd{margin-top:44px;font-size:12px;letter-spacing:.08em;color:var(--sub);text-transform:uppercase;font-weight:700}
 .sechd span{text-transform:none;letter-spacing:0;font-weight:400;margin-left:8px}
+
+/* GIS 탭 — 지역판과 다른 성격이라 따로 크게 둔다 */
+.gis{display:flex;gap:22px;align-items:center;text-decoration:none;color:inherit;margin-top:30px;
+ background:linear-gradient(120deg,rgba(255,122,92,.13),rgba(120,160,220,.10));
+ border:1px solid rgba(255,122,92,.34);border-radius:18px;padding:22px 24px;transition:.14s}
+.gis:hover{transform:translateY(-3px);border-color:rgba(255,122,92,.7);box-shadow:0 18px 50px rgba(0,0,0,.5)}
+.gis .l{flex:1;min-width:0}
+.gis .tag{font-size:10.5px;letter-spacing:.09em;color:var(--acc);text-transform:uppercase;font-weight:800}
+.gis h2{font-size:21px;margin:8px 0 7px;letter-spacing:-.02em}
+.gis p{margin:0;font-size:13px;line-height:1.75;color:#cfe0ee}.gis p b{color:#ffce8a}
+.gis .chips{margin-top:12px;display:flex;flex-wrap:wrap;gap:6px}
+.gis .chips span{font-size:11px;color:var(--sub);background:rgba(255,255,255,.07);
+ border:1px solid var(--line);border-radius:999px;padding:3px 10px}
+.gis .r{flex:none;text-align:right}
+.gis .r .n{font-size:30px;font-weight:800;letter-spacing:-.03em;color:#ffce8a;font-variant-numeric:tabular-nums}
+.gis .r .u{font-size:11.5px;color:var(--sub);margin-top:2px}
+.gis .r .go{margin-top:14px;display:inline-block;font-size:12.5px;font-weight:700;color:#1a0f0a;
+ background:var(--acc);border-radius:8px;padding:8px 16px}
+@media(max-width:760px){.gis{flex-direction:column;align-items:flex-start;gap:14px}.gis .r{text-align:left}}
 </style></head><body>
 <div class="wrap">
   <div class="brand">Hay<b>Day</b> · 환경분석맵</div>
   <h1>환경분석맵 — 지도 기반 도시환경 분석 엔진</h1>
   <p class="lead">건물 3D 형상에 층수·준공연도·용도지역·인구를 결합해 도시환경을 진단합니다.
   <b style="color:#eef2f7">무엇을 알고 싶은지 고르시면 됩니다.</b></p>
+
+  <a class="gis" href="./gis.html">
+    <div class="l">
+      <div class="tag">Tool · New</div>
+      <h2>GIS 탭 — 내 파일을 올려서 바로 분석</h2>
+      <p>가지고 계신 <b>SHP·ZIP·GeoJSON</b>을 지도에 올리면 좌표계와 한글 깨짐을 자동으로 잡아 주고,
+      링 방향·자기교차·용도지역 코드 불일치까지 <b>13가지를 검사</b>합니다.
+      부산 전역 <b>건물 472,608동</b>이 이미 들어 있어, 지도에 원이나 다각형을 그리면
+      그 자리에서 <b>도시재생 쇠퇴 3요건</b>을 판정합니다.</p>
+      <div class="chips"><span>좌표계 자동판별</span><span>CP949 한글 복원</span><span>품질검사 13종</span><span>쇠퇴 3요건 판정</span><span>설치 없음</span></div>
+    </div>
+    <div class="r">
+      <div class="n">472,608</div><div class="u">동 · 부산 전역 내장</div>
+      <div class="go">열기 →</div>
+    </div>
+  </a>
 
   <div class="qgrid">
     <a class="q" href="./gimhae-wondosim.html">
@@ -165,7 +200,12 @@ h1{font-size:30px;line-height:1.3;letter-spacing:-.03em;margin:26px 0 10px}
   지도를 클릭해 반경을 그리면 구역 요건을 실시간 집계하는 <b>구역 시뮬레이터</b>,
   KOSIS 주민등록 인구 시계열(2011~2025)이 추가되어 있습니다. 사하구판은 <b>노후 산단</b>용으로, 빈집 레이어 대신 <b>등록공장 1,161개의 위치·업종 분포와 밀도(열분포)</b>, 공업지역 기반 대상지, 마스터플랜 A~G 단위사업을 담았습니다. 레이어 선택창과 값 표시창을 <b>좌우로 분리</b>했습니다. 부산 도로교통망 분석판은 지역 진단이 아니라 <b>도로망 자체</b>를 다룹니다. 국토교통부 표준노드링크에 부산시 관측 통행속도를 조인해 <b>제한속도 대비 속도비</b>로 위계가 다른 도로를 한 잣대에 놓고, 도로 위계를 끄고 켜서 간선만 볼 수 있으며, 속도가 관측되지 않는 도로는 어두운 배경망으로 함께 깔아 도로망 형태가 끊기지 않게 했습니다.</p></div>
 
-  <div class="foot">데이터: VWorld 건물통합정보·연속지적도·용도지역 · 건축물대장 표제부(준공연도·지상층수) ·
+  <div class="foot">GIS 탭 데이터: 국토교통부 GIS건물통합정보 부산 전역(2026-08-09, 472,608동·302,958필지) ·
+  통계청 KOSIS 「행정구역(시군구)별 성별 인구수」(주민등록 1992~2025) · 통계청 「사업체수(등록기반)」(2020~2024).
+  사업체는 2020년 등록기반으로 조사 기준이 바뀌어 2019년 이전 전수조사와 이어 붙이지 않았고,
+  1995년 구 경계가 바뀐 동래·남·북·연제·수영·사상·기장은 그 이전 인구를 판정에 쓰지 않았습니다.
+  구역 안 인구는 구 인구를 주거 연면적으로 나눈 <b>추정치</b>이며 실측이 아닙니다.<br/><br/>
+  데이터: VWorld 건물통합정보·연속지적도·용도지역 · 건축물대장 표제부(준공연도·지상층수) ·
   KOSIS 주민등록인구 · 부산 서구 고시 제2025-54호 빈집정비계획(2025) · 빈집애 누리집 법정동별 빈집(2026) · 위성영상 Esri · <b>부산광역시 제조업 공장등록현황(2025-12-31)</b> · <b>국토교통부 표준노드링크(2026-07-16)</b> · <b>부산광역시 교통정보서비스센터 지능형교통정보 구간레벨패턴정보(2026-06)</b><br/>
   서구판 층수는 건축물대장 지상층수 기준입니다. 준공연도 미확인 물량 및 구역 경계 추정 구간은 각 화면 안에 명시되어 있습니다.<br/>사하구판의 준공연도·건축물용도·연면적은 국토부 건축물대장 오픈API(건축HUB)가 공공데이터포털 개편(2026-07-29~08-02)으로 응답하지 않아 <b>미확보</b> 상태이며, 화면 안에 그대로 표기했습니다. 노후도 30년 판정은 해당 값 확보 후 표시됩니다.<br/>빈집 수치는 조사주체·정의·시점에 따라 서구 고시 683호와 빈집애 1,855호로 갈립니다. 두 값은 별개 지표로 분리 표기되며 합산·비교 불가입니다.</div>
 </div></body></html>
