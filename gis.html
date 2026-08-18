@@ -158,32 +158,49 @@ h3{margin:0 0 9px;font-size:10.5px;font-weight:800;letter-spacing:.11em;color:va
 .eb .l{flex:none;width:52px;color:var(--ink3)}
 .eb i{flex:1;height:9px;border-radius:3px;background:var(--acc);min-width:1px;opacity:.85}
 .eb b{flex:none;width:38px;text-align:right;font-variant-numeric:tabular-nums;font-size:10.5px}
-.kv{display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid var(--line2)}
+.kv{display:flex;justify-content:space-between;align-items:baseline;gap:14px;
+ padding:9px 0;border-bottom:1px solid var(--line2)}
 .kv:last-child{border:none}
-.kv b{font-variant-numeric:tabular-nums;font-weight:700}
-.verdict{border-radius:9px;padding:11px 12px;margin-bottom:9px;border:1px solid}
+.kv>span{flex:1 1 auto;min-width:0;font-size:11.5px;font-weight:500;color:var(--ink3);line-height:1.45}
+.kv b{flex:none;font-variant-numeric:tabular-nums;font-weight:700;font-size:14.5px;color:var(--ink);
+ letter-spacing:-.01em;white-space:nowrap}
+/* 긴 나열은 오른쪽 칸에 밀어넣지 않는다 — 줄을 바꿔 칩으로 펼친다 */
+.kvl{padding:9px 0;border-bottom:1px solid var(--line2)}
+.kvl:last-child{border:none}
+.kvl>.k{display:block;font-size:11.5px;font-weight:500;color:var(--ink3);margin-bottom:6px}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{display:inline-block;background:var(--panel2);border:1px solid var(--line);white-space:nowrap;
+ border-radius:6px;padding:4px 8px;font-size:11px;color:var(--ink2);line-height:1.35}
+.chip b{margin-left:2px;font-size:12px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+.verdict{border-radius:10px;padding:13px 14px;margin-bottom:12px;border:1px solid}
 .verdict.y{background:var(--okbg);border-color:var(--okbd)}
 .verdict.n{background:var(--panel2);border-color:var(--line)}
-.verdict .t{font-size:13px;font-weight:800}
-.verdict .s{font-size:11.5px;color:var(--ink2);margin-top:3px}
-.hint{font-size:11px;color:var(--ink3);line-height:1.5}
+.verdict .t{font-size:13.5px;font-weight:800;line-height:1.4}
+.verdict .s{font-size:11.5px;color:var(--ink2);margin-top:6px;line-height:1.65}
+.hint{font-size:11px;color:var(--ink3);line-height:1.7;margin-top:10px}
 
-/* ── 결과 패널: 섹션·딱지·출처 ── */
-.hero{border:1px solid var(--acc);background:var(--acc2);border-radius:10px;padding:11px 12px;margin-bottom:10px}
-.hero .ttl{font-size:10.5px;font-weight:800;letter-spacing:.08em;color:var(--acc);margin-bottom:6px}
-.hero .big{padding:0 0 6px}
-.hero .hr{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px}
+/* ── 결과 패널: 글자 체계 ──────────────────────────────────
+   세 단만 쓴다.  ① 섹션 제목 12.5  ② 값 14.5 굵게  ③ 항목명·설명 11.5 흐리게
+   같은 크기가 이어지면 어디부터 읽어야 할지 몰라 아무도 안 읽는다. */
+.hero{border:1px solid var(--acc);background:var(--acc2);border-radius:11px;padding:13px 14px;margin-bottom:14px}
+.hero .ttl{font-size:10.5px;font-weight:800;letter-spacing:.08em;color:var(--acc);margin-bottom:7px}
+.hero .big{padding:0 0 9px}
+.hero .hr{display:flex;flex-wrap:wrap;gap:7px 16px;font-size:12px;line-height:1.5}
 .hero .hr span{color:var(--ink2)}
-.hero .hr b{font-variant-numeric:tabular-nums}
+.hero .hr b{font-variant-numeric:tabular-nums;font-size:13px}
 .copy{width:100%;margin-top:9px;justify-content:center}
-.grp{margin-top:12px}
-.grp>h5{margin:0 0 5px;font-size:10.5px;font-weight:800;letter-spacing:.09em;color:var(--ink3);
- text-transform:none;display:flex;align-items:center;gap:6px}
-.grp>h5 i{flex:1;height:1px;background:var(--line);font-style:normal}
-.grp.soon{opacity:.62}
-.grp.soon .box{border:1px dashed var(--dash);border-radius:8px;padding:9px 10px;font-size:11.5px;color:var(--ink3);line-height:1.55}
-.tg{display:inline-block;font-size:9.5px;font-weight:800;padding:1px 5px;border-radius:4px;letter-spacing:.02em;
- vertical-align:1px;margin-right:4px}
+
+.grp{margin-top:22px;padding-top:14px;border-top:1px solid var(--line)}
+.grp>h5{margin:0 0 4px;font-size:12.5px;font-weight:800;letter-spacing:-.01em;color:var(--ink);
+ display:flex;align-items:center;gap:7px;line-height:1.3}
+.grp>h5 .t{flex:none;white-space:nowrap}          /* 제목이 세로로 쪼개지지 않게 */
+.grp>h5 .tg{flex:none;margin-right:0}
+.grp>h5 i{flex:1 1 auto;height:1px;background:var(--line);font-style:normal;min-width:8px}
+.grp>h5 em{flex:none;max-width:46%;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.grp.soon{opacity:.72}
+.grp.soon .box{border:1px dashed var(--dash);border-radius:8px;padding:11px 12px;font-size:11.5px;color:var(--ink3);line-height:1.65}
+.tg{display:inline-block;font-size:9.5px;font-weight:800;padding:2px 6px;border-radius:5px;letter-spacing:.02em;
+ vertical-align:1px;margin-right:5px;white-space:nowrap}
 .tg.z{background:var(--acc);color:#fff}                    /* 구역 */
 .tg.g{background:var(--hover);color:var(--ink3);border:1px solid var(--line)}  /* 구 전체 */
 .srcx{display:block;font-size:9.5px;color:var(--ink3);font-weight:500;letter-spacing:0;margin-top:1px}
@@ -197,20 +214,27 @@ h3{margin:0 0 9px;font-size:10.5px;font-weight:800;letter-spacing:.11em;color:va
 .trend.dn{color:var(--bad)} .trend.up{color:var(--ok)} .trend.eq{color:var(--ink3)}
 
 /* 쇠퇴 3요건 */
-.dsec{margin-top:13px;padding-top:11px;border-top:2px solid var(--line)}
-.dsec h4{margin:0 0 8px;font-size:11.5px;font-weight:800;letter-spacing:-.01em}
-.dsec h4 .src{display:block;font-size:10px;font-weight:500;color:var(--ink3);letter-spacing:0;margin-top:1px}
-.dq{display:flex;gap:8px;padding:7px 0;border-bottom:1px solid var(--line2)}
-.dq .q{flex:none;width:15px;text-align:center;font-size:13px;line-height:1.35}
+.dsec{margin-top:22px;padding-top:15px;border-top:2px solid var(--line)}
+.dsec h4{margin:0 0 11px;font-size:13px;font-weight:800;letter-spacing:-.01em}
+.dsec h4 .src{display:block;font-size:10px;font-weight:500;color:var(--ink3);letter-spacing:0;margin-top:3px;line-height:1.5}
+.dq{display:flex;gap:9px;padding:12px 0;border-bottom:1px solid var(--line2)}
+.dq .q{flex:none;width:16px;text-align:center;font-size:14px;line-height:1.4}
 .dq .b{flex:1;min-width:0}
-.dq .b .t{font-size:12px;font-weight:700;margin-bottom:1px}
-.dq .b .s{font-size:11px;color:var(--ink2);line-height:1.5}
+.dq .b .t{font-size:12.5px;font-weight:800;margin-bottom:4px}
+.dq .b .s{font-size:11.5px;color:var(--ink2);line-height:1.7}
+.dq .b .ln{margin-bottom:5px}
+.dq .b .ln:last-child{margin-bottom:0}
+/* 법정 판정 문장은 근거와 갈라 놓는다 — 같이 붙어 있으면 어느 게 결론인지 안 보인다 */
+.dq .b .jd{margin-top:7px;padding-top:7px;border-top:1px dashed var(--line2);
+ font-size:11px;color:var(--ink3);line-height:1.65}
+.dq .b .jd b{color:var(--ink2)}
+.srcx{margin-top:2px}
 .herobtn{display:flex;gap:6px;margin-top:8px}
 .herobtn .copy{flex:1;margin-top:0}
-.spk{margin:6px 0 8px;padding:7px 9px 5px;background:var(--panel2);border:1px solid var(--line);border-radius:8px}
+.spk{margin:10px 0 4px;padding:9px 11px 7px;background:var(--panel2);border:1px solid var(--line);border-radius:8px}
 .spkx{display:flex;justify-content:space-between;gap:6px;font-size:10px;color:var(--ink3);
  margin-top:2px;font-variant-numeric:tabular-nums}
-.spkc{font-size:10px;color:var(--ink3);margin-top:3px;line-height:1.45}
+.spkc{font-size:10px;color:var(--ink3);margin-top:5px;line-height:1.55}
 .dbox{margin-top:9px;padding:9px 10px;background:var(--panel2);border:1px solid var(--line);border-radius:8px}
 .pill{display:inline-block;font-size:10px;font-weight:800;padding:2px 7px;border-radius:20px;
  background:var(--hover);color:var(--ink2);letter-spacing:.03em}
@@ -2254,6 +2278,7 @@ function run() {
      그래서 ①「그린 구역 값」과 「구 전체 값」을 절대 섞지 않고
      ②숫자마다 출처를 옆에 붙이고 ③섹션을 갈라 무엇을 분석했는지 보이게 한다.
      ═══════════════════════════════════════════════════════════ */
+  const TT = t => `<span class="t">${t}</span>`;     // 제목이 세로로 쪼개지지 않게 감싼다
   const Z = '<span class="tg z">구역</span>';        // 그린 구역에서 직접 센 값
   const G = '<span class="tg g">구 전체</span>';      // 구·군 통계에서 온 값
   const SRC_BLD = (BASE.stat && BASE.stat.src) || '건축물대장';
@@ -2262,7 +2287,11 @@ function run() {
   // 출처는 섹션 제목 옆에 한 번만 적는다. 줄마다 반복하면 아무도 안 읽는다.
   const grp = (title, body, cls, src) => body
     ? `<div class="grp ${cls || ''}"><h5>${title}<i></i>${
-        src ? `<em style="font-style:normal;font-weight:600;font-size:9.5px;color:var(--ink3)">${esc(src)}</em>` : ''}</h5>${body}</div>` : '';
+        src ? `<em style="font-style:normal;font-weight:600;font-size:9.5px;color:var(--ink3)" title="${esc(src)}">${esc(src)}</em>` : ''}</h5>${body}</div>` : '';
+  /* 여러 개를 늘어놓는 줄은 오른쪽 칸에 밀어넣지 않는다 — 칩으로 펼쳐야 눈에 들어온다 */
+  const kvl = (label, items) => items && items.length
+    ? `<div class="kvl"><span class="k">${label}</span><div class="chips">${
+        items.map(([k, v]) => `<span class="chip">${esc(k)} <b>${nf(v)}</b></span>`).join('')}</div></div>` : '';
 
   window.__hit = hit;          // 「센 건축물 내려받기」가 쓴다
   const meet = p20 >= 50;
@@ -2291,7 +2320,7 @@ function run() {
     </div>`;
 
   /* ── 건축물 ── */
-  const gBld = grp('건축물 현황 ' + Z,
+  const gBld = grp(TT('건축물 현황') + Z,
     kv('준공연도 확인 건축물', `${nf(withYear.length)}동`) +
     kv('최초 준공연도', `${oldest ? oldest + '년' : '-'}${
       oddYear ? ' <span class="pill no" style="font-weight:700">확인 필요</span>' : ''}`) +
@@ -2304,7 +2333,7 @@ function run() {
     '', SRC_BLD);
 
   /* ── 필지·밀도 ── */
-  const gLot = grp('필지 · 개발밀도 ' + Z,
+  const gLot = grp(TT('필지 · 개발밀도') + Z,
     (rich && lotSum ? kv(`평균 건폐율 · 용적률 <span style="color:var(--ink3);font-weight:400">(대지면적 확인 ${nf(bldOnLot)}동)</span>`,
       `${bcr.toFixed(0)}% · ${far.toFixed(0)}%`) : '') +
     (rich && lotSum ? kv(`대지면적 합 <span style="color:var(--ink3);font-weight:400">(필지 ${nf(lotSeenN)}개)</span>`,
@@ -2316,37 +2345,30 @@ function run() {
     '', '건축물대장 대지면적');
 
   /* ── 용도·구조 ── */
-  const gUse = grp('토지이용 · 구조 ' + Z,
-    (hasZone ? kv('용도지역', `<span style="font-weight:600;font-size:11px">${
-      ztop.map(([k,v]) => `${esc(k.replace('지역',''))} ${nf(v)}`).join(' · ')}</span>`, '용도지역지구도') : '') +
-    (utop.length ? kv('건축물 용도', `<span style="font-weight:600;font-size:11px">${
-      utop.map(([k,v]) => `${esc(k)} ${nf(v)}`).join(' · ')}</span>`) : '') +
-    (sttop.length ? kv('주요 구조', `<span style="font-weight:600;font-size:11px">${
-      sttop.map(([k,v]) => `${esc(k.replace('구조',''))} ${nf(v)}`).join(' · ')}</span>`) : '') +
-    (dtop.length ? kv('법정동', `<span style="font-weight:600;font-size:11px">${
-      dtop.map(([k,v]) => `${esc(k)} ${nf(v)}`).join(' · ')}</span>`) : '') +
-    (stop.length ? kv('행정구역', `<span style="font-weight:600;font-size:11px">${
-      stop.map(([k,v]) => `${SGG[k] || k} ${nf(v)}`).join(' · ')}</span>`) : ''),
+  const gUse = grp(TT('토지이용 · 구조') + Z,
+    kvl('용도지역', hasZone ? ztop.map(([k,v]) => [k.replace('지역',''), v]) : null) +
+    kvl('건축물 용도', utop) +
+    kvl('주요 구조', sttop.map(([k,v]) => [k.replace('구조',''), v])) +
+    kvl('법정동', dtop) +
+    kvl('행정구역', stop.map(([k,v]) => [SGG[k] || k, v])),
     '', SRC_BLD);
 
   /* ── 상권 ── 소상공인 상가정보가 있으면 업종까지 실측한다 */
   const cTop = top(shopCat), mTop = top(shopMid);
-  const gShop = shopN ? grp('상권 ' + Z,
+  const gShop = shopN ? grp(TT('상권') + Z,
     kv('영업 중 점포', `${nf(shopN)}개${areaHa ? ` <span style="font-weight:500;color:var(--ink3)">(${(shopN/areaHa).toFixed(1)}개/ha)</span>` : ''}`) +
-    (cTop.length ? kv('업종 대분류', `<span style="font-weight:600;font-size:11px">${
-      cTop.map(([k,v]) => `${esc(k)} ${nf(v)}`).join(' · ')}</span>`) : '') +
-    (mTop.length ? kv('업종 중분류 <span style="color:var(--ink3);font-weight:400">(상위 5)</span>', `<span style="font-weight:600;font-size:11px">${
-      mTop.map(([k,v]) => `${esc(k)} ${nf(v)}`).join(' · ')}</span>`) : '') +
+    kvl('업종 대분류', cTop) +
+    kvl('업종 중분류 <span style="color:var(--ink3)">(상위 5)</span>', mTop) +
     (rich && comN ? kv('상업·업무 용도 건축물', `${nf(comN)}동 · ${(comN / hit.length * 100).toFixed(1)}%`) : '') +
     (rich && comN && shopN ? kv('건물 1동당 점포', `${(shopN / comN).toFixed(1)}개`) : '') +
     (BASE.store.length ? kv('공실 추정 상가 <span style="color:var(--ink3);font-weight:400">(상업용도·점포 미확인)</span>', `${nf(emptyB)}동`) : ''),
     '', '소상공인시장진흥공단 상가(상권)정보 2026-06 (원천 국세청·카드사)') : '';
 
-  const gBiz = gShop ? '' : (BASE.store.length ? grp('상권 ' + Z,
+  const gBiz = gShop ? '' : (BASE.store.length ? grp(TT('상권') + Z,
     kv('영업 중 점포', `${nf(shops)}개`) +
     kv('공실 추정 상가 <span style="color:var(--ink3);font-weight:400">(상업용도·점포 미확인)</span>', `${nf(emptyB)}동`),
     '', '소상공인 상가정보 × 건축물대장')
-  : (rich && comN ? grp('상권 ' + Z,
+  : (rich && comN ? grp(TT('상권') + Z,
     kv('상업·업무 용도 건축물', `${nf(comN)}동 · ${(comN / hit.length * 100).toFixed(1)}%`) +
     kv('상업·업무 연면적', `${nf(Math.round(comA))} ㎡${
       allA ? ` <span style="font-weight:500;color:var(--ink3)">(전체 연면적의 ${(comA / allA * 100).toFixed(0)}%)</span>` : ''}`) +
@@ -2368,33 +2390,35 @@ function run() {
     const hr = new Array(24).fill(0);
     metro.forEach(m => m.st.wd.forEach((v,i) => hr[i] += v));
     const pk = hr.indexOf(Math.max(...hr));
-    gMetro = grp('대중교통 유입 ' + Z,
-      kv(`도시철도 역 <span style="color:var(--ink3);font-weight:400">(구역 안 또는 걸어서 500m)</span>`,
-        `<span style="font-weight:600;font-size:11px">${metro.map(m =>
-          `${esc(m.st.n)}${m.inside ? '' : '<span style="color:var(--ink3)">(인근)</span>'}`).join(' · ')}</span>`) +
+    gMetro = grp(TT('대중교통 유입') + Z,
+      `<div class="kvl"><span class="k">도시철도 역 <span style="color:var(--ink3)">(구역 안 또는 걸어서 500m)</span></span>
+        <div class="chips">${metro.map(m =>
+          `<span class="chip"${m.inside ? ' style="border-color:var(--acc)"' : ''}>${esc(m.st.n)}${
+            m.inside ? '' : ' <span style="color:var(--ink3);font-size:10px">인근</span>'}</span>`).join('')}</div></div>` +
       kv('평일 하루 승하차', `${nf(wdAll)}명`) +
       kv('주말 하루 승하차', `${nf(weAll)}명`) +
       kv('가장 붐비는 시간', `${pk + 1}시~${pk + 2}시 · ${nf(hr[pk])}명`) +
-      kv('주말 / 평일 비', `${wdAll ? (weAll / wdAll * 100).toFixed(0) : '-'}% <span style="font-weight:500;color:var(--ink3)">${
-        wdAll && weAll / wdAll >= 1 ? '— 주말이 더 붐빈다(관광·여가 성격)'
-        : wdAll && weAll / wdAll < 0.7 ? '— 평일에 몰린다(업무·통근 성격)' : '— 평일·주말이 비슷하다'}</span>`) +
+      kv(`주말 / 평일 비<span class="srcx">${
+        wdAll && weAll / wdAll >= 1 ? '주말이 더 붐빈다 — 관광·여가 성격'
+        : wdAll && weAll / wdAll < 0.7 ? '평일에 몰린다 — 업무·통근 성격' : '평일·주말이 비슷하다'}</span>`,
+        `${wdAll ? (weAll / wdAll * 100).toFixed(0) : '-'}%`) +
       `<div class="spk">${spark(hr, hr.map((_, i) => (i + 1) + '시'), {unit:'명'})}
         <div class="spkc">평일 시간대별 승하차 합 · ${esc(M.src)}</div></div>`,
       '', '부산교통공사 일별 역별 시간대별 승하차');
   }
 
-  const gSoon = grp('생활SOC · 교통',
+  const gSoon = grp(TT('생활SOC · 교통'),
     `<div class="box"><b>준비 중</b> — 공공시설·의료 접근성을 이 구역 기준으로 셉니다.
       넣을 품목 목록을 받는 대로 붙입니다.${M && !metro.length
         ? ' 이 구역 인근 500m 안에는 <b>부산 도시철도 역이 없습니다</b>(김해경전철은 갱신이 연 1회라 아직 안 붙였습니다).'
         : ' 대중교통은 위에 먼저 붙였습니다.'}</div>`, 'soon') +
-    grp('유동인구',
+    grp(TT('유동인구'),
     `<div class="box"><b>쌓는 중</b> — 지금 붙인 실측 신호는 <b>도시철도 승하차</b>(시간대별·월 갱신)와
       <b>점포·업종</b>(국세청·카드사 기반·분기)입니다. 여기에 버스 정류소 승하차와 도로 교통량을 더해
       <b>보행활동 지수</b>를 만듭니다.<br>
       ⚠ 업계 표준(소상공인·서울 상권분석)은 <b>통신사 생활인구</b>를 격자에 배분해 만듭니다.
       우리 값과 근거가 다르므로 <b>「유동인구 몇 명」이라고 쓰지 않습니다.</b></div>`, 'soon')
-    + (BASE.store.length ? '' : grp('점포 실측',
+    + (BASE.store.length || shopN ? '' : grp(TT('점포 실측'),
     `<div class="box"><b>준비 중</b> — 이 지역은 점포 자료를 아직 안 붙였습니다.
       위 「상권」 수치는 건축물 용도로 센 추정치입니다.</div>`, 'soon'));
 
@@ -2820,28 +2844,28 @@ function declineHTML(hit, p20, areaM2) {
     </div>
 
     ${row('① 인구', C1,
-      `${Z} 추정 상주인구 <b>${estOK && est > 0 ? '약 ' + nf(Math.round(est)) + '명' : '산출 불가'}</b>
-        <span style="color:var(--ink3)">— 주거 연면적 ${nf(zoneRes)}㎡ 기준 면적안분 추정치</span><br>
-       ${G_} ${py0}~2025년 최다 ${nf(pmax)}명 → 2025년 ${nf(plast)}명 ${trend(pmax, plast)}<br>
-       <span style="color:var(--ink3)">판정 — 최근 30년 최다 대비 20%↑ 감소 <b>${c1a ? '해당' : '미해당'}</b>
-       / 최근 5년간 3년 이상 연속 감소 <b>${c1b ? '해당' : '미해당'}</b>(최장 ${pRun}년)</span>`)}
+      `<div class="ln">${Z} 추정 상주인구 <b>${estOK && est > 0 ? '약 ' + nf(Math.round(est)) + '명' : '산출 불가'}</b>
+        <span style="color:var(--ink3)">— 주거 연면적 ${nf(zoneRes)}㎡ 기준 면적안분 추정치</span></div>
+       <div class="ln">${G_} ${py0}~2025년 최다 ${nf(pmax)}명 → 2025년 ${nf(plast)}명 ${trend(pmax, plast)}</div>
+       <div class="jd">최근 30년 최다 대비 20%↑ 감소 <b>${c1a ? '해당' : '미해당'}</b>
+       · 최근 5년간 3년 이상 연속 감소 <b>${c1b ? '해당' : '미해당'}</b>(최장 ${pRun}년)</div>`)}
 
     ${spkBox(psAll, psAll.map((_, i) => pAll0 + i), {unit:'명', ls:'년'},
       `${P.nm[G]} 주민등록인구 ${pAll0}~2025${
       W0 > pAll0 ? ` · 판정은 법정 기준인 <b>최근 30년(${W0}~2025)</b>만 적용` : ''}`)}
 
     ${row('② 사업체', C2,
-      `${G_} 2020년 ${nf(bs[0])}개 → 2024년 ${nf(blast)}개 ${trend(bs[0], blast)}<br>
-       <span style="color:var(--ink3)">판정 — 최근 5년간 3년 이상 연속 감소 <b>${C2 ? '해당' : '미해당'}</b>(최장 ${bRun}년${
-       bTail !== bRun ? `, 2024년까지 이어진 것은 ${bTail}년` : ''})</span><br>
-       <span style="color:var(--warn);font-weight:600">10년 최다 대비 5% 기준은 판정하지 않았습니다</span>
-       <span style="color:var(--ink3)">— 시군구 사업체 통계가 2020년 등록기반으로 전환되어 2019년 이전 전수조사와 이어 붙일 수 없습니다.</span>`)}
+      `<div class="ln">${G_} 2020년 ${nf(bs[0])}개 → 2024년 ${nf(blast)}개 ${trend(bs[0], blast)}</div>
+       <div class="jd">최근 5년간 3년 이상 연속 감소 <b>${C2 ? '해당' : '미해당'}</b>(최장 ${bRun}년${
+       bTail !== bRun ? `, 2024년까지 이어진 것은 ${bTail}년` : ''})<br>
+       <span style="color:var(--warn);font-weight:700">10년 최다 대비 5% 기준은 판정하지 않았습니다</span>
+       — 시군구 사업체 통계가 2020년 등록기반으로 전환되어 2019년 이전 전수조사와 이어 붙일 수 없습니다.</div>`)}
 
     ${spkBox(bs, bizLabels, {unit:'개', ls:'년'}, `${P.nm[G]} 사업체수(등록기반) 2020~2024`)}
 
     ${row('③ 노후건축물', C3,
-      `${Z} 준공 20년 이상 <b>${p20.toFixed(1)}%</b> <span style="color:var(--ink3)">(법정 기준 50%)</span>
-       — 그린 구역 안 건축물을 직접 산정`)}
+      `<div class="ln">${Z} 준공 20년 이상 <b>${p20.toFixed(1)}%</b>
+        <span style="color:var(--ink3)">(법정 기준 50%) — 그린 구역 안 건축물을 직접 산정</span></div>`)}
 
     ${window.__eraData ? spkBox(window.__eraData.vals, window.__eraData.labels, {unit:'동'},
       '그린 구역 건축물의 준공 연대별 분포') : ''}
