@@ -1256,17 +1256,24 @@ $('#theme').onclick = () => {
 /* ═══════════════ 좌우 정보칸 폭 조절 ═══════════════ */
 /* 끌면 넓어지고 두 번 누르면 원래대로. 폭은 다음에 열 때도 그대로다. */
 (function () {
-  const DEF = {L: 296, R: 330}, MIN = 210, MAX = 720;
+  /* 폭 한계는 고정한다 — 너무 넓히면 지도가 사라지고 글자도 우스워진다 */
+  const DEF = {L: 296, R: 330}, MIN = 260, MAX = 460;
+  /* 글자 배율 — 칸을 넓히면 안의 글자도 같이 커진다. 폭에 그대로 비례시키면 너무 크니 65%만 따라간다 */
+  const FS_MIN = 0.88, FS_MAX = 1.26, DAMP = .65;
   const root = document.documentElement;
+  const pane = {L: document.querySelector('.pane.l'), R: document.querySelector('.pane.r')};
   const get = k => { try { return +localStorage.getItem('envmap-pane-' + k) || 0; } catch (e) { return 0; } };
   const put = (k, v) => { try { localStorage.setItem('envmap-pane-' + k, v); } catch (e) {} };
   const clamp = v => Math.max(MIN, Math.min(MAX, Math.round(v)));
 
   function apply(k, px, save) {
     root.style.setProperty('--' + k, px + 'px');
+    const f = Math.max(FS_MIN, Math.min(FS_MAX, 1 + (px / DEF[k] - 1) * DAMP));
+    // 좁은 화면에서는 칸이 위아래로 쌓이므로 배율을 건드리지 않는다
+    if (pane[k]) pane[k].style.zoom = innerWidth <= 940 ? '' : f.toFixed(3);
     if (save) put(k, px);
   }
-  ['L', 'R'].forEach(k => { const v = get(k); if (v) apply(k, clamp(v), false); });
+  ['L', 'R'].forEach(k => apply(k, clamp(get(k) || DEF[k]), false));
 
   /* 지도는 크기가 바뀐 걸 스스로 모른다. 화면 한 번 그릴 때 한 번만 알려 준다 */
   let pending = false;
@@ -1310,7 +1317,10 @@ $('#theme').onclick = () => {
   }
   bind($('#rszL'), 'L', 1);
   bind($('#rszR'), 'R', -1);
-  addEventListener('resize', nudgeMap);
+  addEventListener('resize', () => {
+    nudgeMap();
+    ['L', 'R'].forEach(k => apply(k, clamp(get(k) || DEF[k]), false));
+  });
 })();
 
 /* 로그 */
