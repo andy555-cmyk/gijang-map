@@ -18,7 +18,7 @@ html,body{margin:0;min-height:100%;background:
 .brand b{color:var(--acc)}
 h1{font-size:44px;line-height:1.22;letter-spacing:-.035em;margin:20px 0 0;font-weight:800}
 .lead{color:var(--sub);font-size:17.5px;line-height:1.75;margin:18px auto 0;max-width:700px}
-.legend{margin:26px auto 0;display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
+.legend{margin:52px auto 0;display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
 .legend span{font-size:14px;font-weight:700;padding:7px 16px;border-radius:999px;
  border:1px solid var(--line);background:rgba(255,255,255,.035)}
 .legend .l-g{color:#8fe3ba;border-color:rgba(120,220,170,.34)}
@@ -118,7 +118,7 @@ details.info .body{display:block;padding:0 26px 24px;font-size:14px;color:var(--
 <div class="brand">Hay<b>Day</b> · 환경분석맵</div>
 <h1>지도 위에서 도시를 진단합니다</h1>
 <p class="lead">건물 3D 형상에 층수·준공연도·용도지역·인구·점포를 결합해 어디가 낡았고 어디가 비었는지, 상권이 어디로 옮겨갔는지를 한 화면에서 봅니다.</p>
-<div class="legend"><span class="l-g">도구 1</span><span class="l-r">대상지 5곳</span><span class="l-t">주제도 1</span></div></div>
+</div>
 <div class="main">
 <div class="rail">
 <div><div class="hd"><span class="eyebrow k-g">도구</span><h2>내 파일로 분석</h2><p></p></div><a class="tool" href="./gis.html"><h3>GIS — 내 파일을 올려서 바로 분석</h3><div class="big"><div class="n">472,608</div><div class="u">동 · 부산 전역이 이미 들어 있습니다</div></div><p>가지고 계신 <b>SHP·ZIP·GeoJSON</b>을 올리면 좌표계와 한글 깨짐을 자동으로 잡아 주고, 링 방향·자기교차·용도지역 코드 불일치까지 <b>13가지를 검사</b>합니다. 지도에 원이나 다각형을 그리면 그 자리에서 <b>도시재생 쇠퇴 3요건</b>을 판정합니다.</p><div class="chips"><span>좌표계 자동판별</span><span>CP949 한글 복원</span><span>품질검사 13종</span><span>쇠퇴 3요건 판정</span><span>설치 없음</span></div><span class="go">열기 →</span></a></div>
@@ -132,6 +132,7 @@ details.info .body{display:block;padding:0 26px 24px;font-size:14px;color:var(--
 </div>
 </div>
 <div class="full"><div class="hd"><span class="eyebrow k-n">길잡이</span><h2>질문으로 찾기</h2><p>어디를 열지 모를 때</p></div><div class="qlist"><a href="./gimhae-wondosim.html"><b>상권이 어디로 옮겨갔나</b><span>동네별 점포 수와 빈 점포<br><i>김해 원도심 →</i></span></a><a href="./seogu.html"><b>어디부터 정비할까</b><span>낡은 건물·빈집이 몰린 곳<br><i>부산 서구 · 포항 →</i></span></a><a href="./gimhae-wondosim.html"><b>가게가 줄고 있나</b><span>사업체수 9개년 · 도시재생 3대 지표<br><i>김해 원도심 →</i></span></a><a href="./seogu.html"><b>빈집이 어디 몰려 있나</b><span>반경을 그리면 3요건 즉시 판정<br><i>부산 서구 →</i></span></a><a href="./saha.html"><b>공장이 어디에 몰려 있나</b><span>등록공장 1,161개 위치·업종 밀도<br><i>사하 →</i></span></a><a href="./busan-traffic.html"><b>길이 어디서 막히나</b><span>제한속도 대비 속도비로 비교<br><i>부산 전역 →</i></span></a></div></div>
+<div class="legend"><span class="l-g">도구 1</span><span class="l-r">대상지 5곳</span><span class="l-t">주제도 1</span></div>
 <details class="info"><summary>엔진 공통 기능 · 데이터 출처 · 한계</summary><div class="body"><div class="feat"><h3>엔진 공통 기능</h3>
   <p>건물 단위 3D 압출과 클릭 상세, 층수·용도지역·노후도 3종 현황분석 전환, 노후 밴드별 개별 필터,
   층수 필터와 사업구역 내 건물만 보기. 서구판에는 <b>빈집밀집구역 3요건 자동판정기</b>와
