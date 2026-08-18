@@ -205,6 +205,8 @@ h3{margin:0 0 9px;font-size:10.5px;font-weight:800;letter-spacing:.11em;color:va
 .dq .b{flex:1;min-width:0}
 .dq .b .t{font-size:12px;font-weight:700;margin-bottom:1px}
 .dq .b .s{font-size:11px;color:var(--ink2);line-height:1.5}
+.herobtn{display:flex;gap:6px;margin-top:8px}
+.herobtn .copy{flex:1;margin-top:0}
 .spk{margin:6px 0 8px;padding:7px 9px 5px;background:var(--panel2);border:1px solid var(--line);border-radius:8px}
 .spkx{display:flex;justify-content:space-between;gap:6px;font-size:10px;color:var(--ink3);
  margin-top:2px;font-variant-numeric:tabular-nums}
@@ -2139,6 +2141,11 @@ function run() {
   let parcels = 0, weak = 0, base = 0, lotSum = 0, under = 0, maxFl = 0;
   let baseOnLot = 0, floorOnLot = 0, bldOnLot = 0, lotSeenN = 0;
   const dc = {}, stc = {}, era = {'~1979':0,'1980년대':0,'1990년대':0,'2000년대':0,'2010년대':0,'2020년~':0};
+  /* 상업·업무 용도 — 점포 자료가 없는 지역에서 「상권」을 대신 재는 잣대다.
+     건축물대장 용도만으로 세므로 「추정」이라고 못박아 쓴다. */
+  const COM_USE = ['제1종근린생활시설','제2종근린생활시설','근린생활시설','판매시설','판매및영업시설',
+    '숙박시설','위락시설','업무시설','운동시설','문화및집회시설','관광휴게시설','제조업소','사무소'];
+  let comN = 0, comA = 0, n1N = 0, n2N = 0, allA = 0;
   if (rich) {
     const ps = new Set();
     const lotSeen = new Map();          // 필지번호 → 대지면적 (한 번만 더한다)
@@ -2154,6 +2161,12 @@ function run() {
       if (b.f > maxFl) maxFl = b.f;
       const stn = (BASE.stdic||[])[b.st]; if (stn) { stc[stn]=(stc[stn]||0)+1; if (WEAK.test(stn)) weak++; }
       const dn = (BASE.ddic||[])[b.d2]; if (dn) dc[dn]=(dc[dn]||0)+1;
+      const un = BASE.udic[b.u] || '';
+      const ua = areaOf(b);
+      allA += ua;
+      if (COM_USE.indexOf(un) >= 0) { comN++; comA += ua; }
+      if (un === '제1종근린생활시설') n1N++;
+      if (un === '제2종근린생활시설') n2N++;
       if (b.y) {
         if (b.y < 1980) era['~1979']++; else if (b.y < 1990) era['1980년대']++;
         else if (b.y < 2000) era['1990년대']++; else if (b.y < 2010) era['2000년대']++;
@@ -2197,6 +2210,7 @@ function run() {
     ? `<div class="grp ${cls || ''}"><h5>${title}<i></i>${
         src ? `<em style="font-style:normal;font-weight:600;font-size:9.5px;color:var(--ink3)">${esc(src)}</em>` : ''}</h5>${body}</div>` : '';
 
+  window.__hit = hit;          // 「센 건축물 내려받기」가 쓴다
   const meet = p20 >= 50;
   const areaHa = crossed ? null : areaM2 / 10000;
   window.__eraBar = (rich && withYear.length) ? eraBar : '';   // 쇠퇴 ③ 에서 쓴다
@@ -2216,7 +2230,10 @@ function run() {
         <span>20년 이상 <b>${p20.toFixed(1)}%</b></span>
         <span id="heropop">추정 인구 <b>계산 중</b></span>
       </div>
-      <button class="btn g copy" id="copyres" type="button">보고서용으로 복사</button>
+      <div class="herobtn">
+        <button class="btn g copy" id="copyres" type="button">보고서용으로 복사</button>
+        <button class="btn g copy" id="dlcsv" type="button">센 건축물 내려받기 (CSV)</button>
+      </div>
     </div>`;
 
   /* ── 건축물 ── */
@@ -2258,19 +2275,34 @@ function run() {
       stop.map(([k,v]) => `${SGG[k] || k} ${nf(v)}`).join(' · ')}</span>`) : ''),
     '', SRC_BLD);
 
-  /* ── 상권 (자료가 있는 지역만) ── */
+  /* ── 상권 ── 점포 자료가 있으면 실측, 없으면 건축물 용도로 추정한다 */
   const gBiz = BASE.store.length ? grp('상권 ' + Z,
     kv('영업 중 점포', `${nf(shops)}개`) +
     kv('공실 추정 상가 <span style="color:var(--ink3);font-weight:400">(상업용도·점포 미확인)</span>', `${nf(emptyB)}동`),
-    '', '소상공인 상가정보 × 건축물대장') : '';
+    '', '소상공인 상가정보 × 건축물대장')
+  : (rich && comN ? grp('상권 ' + Z,
+    kv('상업·업무 용도 건축물', `${nf(comN)}동 · ${(comN / hit.length * 100).toFixed(1)}%`) +
+    kv('상업·업무 연면적', `${nf(Math.round(comA))} ㎡${
+      allA ? ` <span style="font-weight:500;color:var(--ink3)">(전체 연면적의 ${(comA / allA * 100).toFixed(0)}%)</span>` : ''}`) +
+    kv('제1종 근린생활시설', `${nf(n1N)}동`) +
+    kv('제2종 근린생활시설', `${nf(n2N)}동`) +
+    `<p class="hint" style="margin-top:6px">점포 수가 아니라 <b>건축물대장 주용도</b>로 센 <b>추정치</b>입니다.
+      한 건물에 여러 점포가 들어 있어도 1동으로 세고, 주택 1층 상가는 주용도가 주택이면 빠집니다.
+      실제 점포 수는 소상공인 상가정보를 붙여야 나옵니다.</p>`,
+    '', SRC_BLD) : '');
 
   /* ── 아직 안 붙인 섹션 — 무엇이 남았는지 화면에 보인다 ── */
   const gSoon = grp('생활SOC · 교통',
     `<div class="box"><b>준비 중</b> — 공공시설·의료·교통 접근성을 이 구역 기준으로 셉니다.
       넣을 품목 목록을 받는 대로 붙입니다.</div>`, 'soon') +
-    (BASE.store.length ? '' : grp('상권 · 유동인구',
-    `<div class="box"><b>준비 중</b> — 이 지역은 아직 점포·유동인구 자료가 없습니다.
-      유동인구는 지금 교통 자료로만 뽑고 있어 소상공인 상권정보 기준과 대조가 필요합니다.</div>`, 'soon'));
+    grp('유동인구',
+    `<div class="box"><b>준비 중</b> — 업계 표준(소상공인 상권정보·서울 상권분석)은
+      <b>통신사 생활인구</b>를 격자에 배분해 길 단위로 만들고 <b>분기</b>마다 갱신합니다.
+      우리가 지금 쓰는 값은 <b>교통량 기반</b>이라 산출 근거가 다릅니다 —
+      같은 자리에 두 값을 나란히 놓고 대조한 뒤에 올립니다.</div>`, 'soon')
+    + (BASE.store.length ? '' : grp('점포 실측',
+    `<div class="box"><b>준비 중</b> — 이 지역은 점포 자료를 아직 안 붙였습니다.
+      위 「상권」 수치는 건축물 용도로 센 추정치입니다.</div>`, 'soon'));
 
   const foot = `<p class="hint" style="margin-top:10px">
       원천 — ${esc(SRC_BLD)}${BASE.store.length ? ' · 소상공인 상가정보' : ''}.
@@ -2303,12 +2335,56 @@ function run() {
   const cb = $('#copyres');
   if (cb) cb.onclick = () => {
     const txt = $('#res').innerText
-      .replace(/보고서용으로 복사\n?/, '')
+      .replace(/보고서용으로 복사\n?/, '').replace(/센 건축물 내려받기 \(CSV\)\n?/, '')
       .replace(/\n{3,}/g, '\n\n').trim();
     const done = () => { cb.textContent = '복사했습니다'; setTimeout(() => cb.textContent = '보고서용으로 복사', 1600); };
     if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(done, done);
     else { const t = document.createElement('textarea'); t.value = txt; document.body.appendChild(t); t.select();
            try { document.execCommand('copy'); } catch(e){} t.remove(); done(); }
+  };
+
+  /* 센 건축물을 그대로 내려준다 — 「믿을 수 있냐? 정확하냐?」에 대한 답은 원자료다.
+     엑셀에서 직접 세어 보면 화면 숫자가 맞는지 그 자리에서 확인된다. */
+  const db = $('#dlcsv');
+  if (db) db.onclick = () => {
+    const rows = window.__hit || [];
+    if (!rows.length) return;
+    /* 시군구 이름 — 부산 자료는 법정동 코드로 구를 찾는다(행정구역 사전이 비어 있다) */
+    const P = window.__BSPOP__;
+    const guName = b => {
+      const n = (BASE.sdic || [])[b.s];
+      if (n) return SGG[n] || n;
+      if (!P || BASE.__key !== 'busan' || b.d2 === undefined) return '';
+      const g = (b.d2 === P.sj) ? (b.cx >= 129.0 ? 8 : 11) : P.dsgg[b.d2];
+      return (g >= 0 && P.nm[g]) ? P.nm[g] : '';
+    };
+    const head = ['순번','법정동','시군구','주용도','구조','준공연도','지상층수','지하층수',
+                  '건축면적_㎡','연면적_㎡','대지면적_㎡','필지번호','경도','위도'];
+    const q = v => {
+      const t = (v === undefined || v === null) ? '' : String(v);
+      return /[",\n]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t;
+    };
+    const lines = [head.join(',')];
+    rows.forEach((b, i) => lines.push([
+      i + 1,
+      (BASE.ddic || [])[b.d2] || '',
+      guName(b),
+      BASE.udic[b.u] || '',
+      (BASE.stdic || [])[b.st] || '',
+      b.y || '', b.f || '', b.bf || '',
+      b.ba || '', areaOf(b) || '', b.lot || '',
+      b.pid !== undefined ? b.pid : '',
+      (b.cx || 0).toFixed(6), (b.cy || 0).toFixed(6)
+    ].map(q).join(',')));
+    /* 엑셀이 한글을 깨뜨리지 않게 BOM 을 앞에 붙인다 */
+    const blob = new Blob(['\uFEFF' + lines.join('\r\n')], {type:'text/csv;charset=utf-8'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `구역_건축물_${nf(rows.length).replace(/,/g,'')}동.csv`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    db.textContent = '내려받았습니다';
+    setTimeout(() => db.textContent = '센 건축물 내려받기 (CSV)', 1600);
   };
 }
 
