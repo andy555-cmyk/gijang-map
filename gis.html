@@ -48,7 +48,16 @@ body{background:var(--bg);color:var(--ink);
 #theme:hover{background:var(--hover);color:var(--ink)}
 
 /* 본체 */
-.main{flex:1;display:grid;grid-template-columns:var(--L) 1fr var(--R);min-height:0}
+.main{flex:1;display:grid;grid-template-columns:var(--L) 6px 1fr 6px var(--R);min-height:0}
+/* 좌우 폭 조절 손잡이 — 끌어서 넓히고 두 번 누르면 원래대로 */
+.rsz{background:var(--line);cursor:col-resize;position:relative;transition:background .12s;touch-action:none}
+.rsz::after{content:"";position:absolute;inset:0 -4px;}
+.rsz::before{content:"";position:absolute;left:50%;top:50%;width:2px;height:26px;margin:-13px 0 0 -1px;
+ border-radius:2px;background:var(--ink3);opacity:.35}
+.rsz:hover,.rsz.on{background:var(--acc)}
+.rsz:hover::before,.rsz.on::before{opacity:0;}
+body.rszing{cursor:col-resize;user-select:none}
+body.rszing #map{pointer-events:none}
 .pane{background:var(--panel);overflow-y:auto;overscroll-behavior:contain}
 .pane.l{border-right:1px solid var(--line)}
 .pane.r{border-left:1px solid var(--line)}
@@ -196,7 +205,10 @@ h3{margin:0 0 9px;font-size:10.5px;font-weight:800;letter-spacing:.11em;color:va
 .dq .b{flex:1;min-width:0}
 .dq .b .t{font-size:12px;font-weight:700;margin-bottom:1px}
 .dq .b .s{font-size:11px;color:var(--ink2);line-height:1.5}
-.spk{margin:6px 0 8px;padding:7px 9px 4px;background:var(--panel2);border:1px solid var(--line);border-radius:8px}
+.spk{margin:6px 0 8px;padding:7px 9px 5px;background:var(--panel2);border:1px solid var(--line);border-radius:8px}
+.spkx{display:flex;justify-content:space-between;gap:6px;font-size:10px;color:var(--ink3);
+ margin-top:2px;font-variant-numeric:tabular-nums}
+.spkc{font-size:10px;color:var(--ink3);margin-top:3px;line-height:1.45}
 .dbox{margin-top:9px;padding:9px 10px;background:var(--panel2);border:1px solid var(--line);border-radius:8px}
 .pill{display:inline-block;font-size:10px;font-weight:800;padding:2px 7px;border-radius:20px;
  background:var(--hover);color:var(--ink2);letter-spacing:.03em}
@@ -217,6 +229,7 @@ html[data-theme="dark"] .maplibregl-ctrl-scale{background:rgba(21,26,32,.7);colo
   .perf{display:none}                 /* 좁은 화면에서는 가로줄이 생기지 않게 숨긴다 */
   .brand{font-size:13px}
   .main{grid-template-columns:1fr;grid-template-rows:auto 46vh auto}
+  .rsz{display:none}
   .pane{max-height:36vh}
   .pane.l{border-right:none;border-bottom:1px solid var(--line)}
   .pane.r{border-left:none;border-top:1px solid var(--line)}
@@ -295,8 +308,12 @@ html[data-theme="dark"] .maplibregl-ctrl-scale{background:rgba(21,26,32,.7);colo
     </div>
   </div>
 
+  <div class="rsz" id="rszL" title="끌어서 폭 조절 · 두 번 누르면 원래대로"></div>
+
   <!-- 지도 -->
   <div id="map"></div>
+
+  <div class="rsz" id="rszR" title="끌어서 폭 조절 · 두 번 누르면 원래대로"></div>
 
   <!-- 오른쪽 -->
   <div class="pane r">
@@ -1236,6 +1253,66 @@ $('#theme').onclick = () => {
   else if (window.anaPaint) try { window.anaPaint(); } catch(e){}
 };
 
+/* ═══════════════ 좌우 정보칸 폭 조절 ═══════════════ */
+/* 끌면 넓어지고 두 번 누르면 원래대로. 폭은 다음에 열 때도 그대로다. */
+(function () {
+  const DEF = {L: 296, R: 330}, MIN = 210, MAX = 720;
+  const root = document.documentElement;
+  const get = k => { try { return +localStorage.getItem('envmap-pane-' + k) || 0; } catch (e) { return 0; } };
+  const put = (k, v) => { try { localStorage.setItem('envmap-pane-' + k, v); } catch (e) {} };
+  const clamp = v => Math.max(MIN, Math.min(MAX, Math.round(v)));
+
+  function apply(k, px, save) {
+    root.style.setProperty('--' + k, px + 'px');
+    if (save) put(k, px);
+  }
+  ['L', 'R'].forEach(k => { const v = get(k); if (v) apply(k, clamp(v), false); });
+
+  /* 지도는 크기가 바뀐 걸 스스로 모른다. 화면 한 번 그릴 때 한 번만 알려 준다 */
+  let pending = false;
+  function nudgeMap() {
+    if (pending) return;
+    pending = true;
+    requestAnimationFrame(() => { pending = false; if (window.map && map.resize) try { map.resize(); } catch (e) {} });
+  }
+
+  function bind(el, k, dir) {
+    if (!el) return;
+    let id = null, w0 = 0, x0 = 0;
+    el.addEventListener('pointerdown', e => {
+      if (e.button) return;
+      id = e.pointerId; x0 = e.clientX;
+      w0 = parseFloat(getComputedStyle(root).getPropertyValue('--' + k)) || DEF[k];
+      el.setPointerCapture(id);
+      el.classList.add('on'); document.body.classList.add('rszing');
+      e.preventDefault();
+    });
+    el.addEventListener('pointermove', e => {
+      if (id === null) return;
+      const w = clamp(w0 + (e.clientX - x0) * dir);
+      /* 지도가 너무 좁아지지 않게 — 가운데를 260px 아래로는 못 줄인다 */
+      const other = parseFloat(getComputedStyle(root).getPropertyValue('--' + (k === 'L' ? 'R' : 'L'))) || 0;
+      if (window.innerWidth - w - other - 12 < 260) return;
+      apply(k, w, false);
+      nudgeMap();
+    });
+    const end = () => {
+      if (id === null) return;
+      try { el.releasePointerCapture(id); } catch (e) {}
+      id = null;
+      el.classList.remove('on'); document.body.classList.remove('rszing');
+      put(k, Math.round(parseFloat(getComputedStyle(root).getPropertyValue('--' + k))));
+      nudgeMap();
+    };
+    el.addEventListener('pointerup', end);
+    el.addEventListener('pointercancel', end);
+    el.addEventListener('dblclick', () => { apply(k, DEF[k], true); nudgeMap(); });
+  }
+  bind($('#rszL'), 'L', 1);
+  bind($('#rszR'), 'R', -1);
+  addEventListener('resize', nudgeMap);
+})();
+
 /* 로그 */
 function logLine(ok, msg) {
   $('#logsec').style.display = '';
@@ -2113,6 +2190,9 @@ function run() {
   const meet = p20 >= 50;
   const areaHa = crossed ? null : areaM2 / 10000;
   window.__eraBar = (rich && withYear.length) ? eraBar : '';   // 쇠퇴 ③ 에서 쓴다
+  // 쇠퇴 ③ 그래프도 인구·사업체와 같은 꺾은선으로 그린다
+  window.__eraData = (rich && withYear.length)
+    ? {labels: Object.keys(era), vals: Object.values(era)} : null;
 
   /* ── 맨 위 요약 — 전부 「그린 구역」 값이다 ── */
   const heroPop = (window.__zoneEst && window.__zoneEst.ok) ? window.__zoneEst.val : null;
@@ -2429,37 +2509,45 @@ function tailRunDown(arr) {
   return n;
 }
 
-/* 작은 꺾은선 — 글로 백 줄 쓰는 것보다 이게 빠르다 */
-function spark(vals, y0, W, H) {
-  W = W || 240; H = H || 44;
+/* 작은 꺾은선 하나로 통일한다 — 인구·사업체·노후 전부 같은 모양으로 본다.
+   막대와 꺾은선이 섞여 있으면 어느 게 늘고 주는지 한눈에 안 들어온다(대표 지시 2026-08-18). */
+function spark(vals, labels, opt) {
+  opt = opt || {};
+  const W = opt.W || 240, H = opt.H || 46, unit = opt.unit || '';
+  const n = vals.length;
   const mn = Math.min(...vals), mx = Math.max(...vals), rg = (mx - mn) || 1;
-  const x = i => 2 + i / (vals.length - 1) * (W - 4);
-  const y = v => H - 4 - (v - mn) / rg * (H - 10);
+  const x = i => 3 + (n === 1 ? (W - 6) / 2 : i / (n - 1) * (W - 6));
+  const y = v => H - 5 - (v - mn) / rg * (H - 12);
   const d = vals.map((v, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join('');
-  const ar = `${d}L${x(vals.length-1).toFixed(1)},${H}L${x(0).toFixed(1)},${H}Z`;
+  const ar = `${d}L${x(n-1).toFixed(1)},${H}L${x(0).toFixed(1)},${H}Z`;
   const pi = vals.indexOf(mx);
+  /* 점이 적으면 각 해가 어디인지 안 보인다 — 12개 이하일 때만 점을 찍는다 */
+  /* ⚠ 칸 폭이 늘면 svg 가로가 늘어나 <circle> 은 타원이 된다.
+     길이 0 인 둥근 선 + vector-effect 로 그리면 어떤 폭에서도 정확한 동그라미다. */
+  const dot = (i, v, r, col, op) =>
+    `<line x1="${x(i).toFixed(1)}" y1="${y(v).toFixed(1)}" x2="${x(i).toFixed(1)}" y2="${y(v).toFixed(1)}"
+      style="stroke:${col};stroke-width:${r * 2};stroke-linecap:round;vector-effect:non-scaling-stroke${
+      op ? ';opacity:' + op : ''}"/>`;
+  const dots = n <= 12 ? vals.map((v, i) => dot(i, v, 1.9, 'var(--acc)', .6)).join('') : '';
   /* 색은 CSS 변수로 — 밝은 화면·어두운 화면에서 같이 바뀐다 */
-  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:${H}px;display:block">
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="width:100%;height:${H}px;display:block">
     <path d="${ar}" style="fill:var(--acc);opacity:.12"/>
-    <path d="${d}" style="fill:none;stroke:var(--acc);stroke-width:1.6"/>
-    <circle cx="${x(pi).toFixed(1)}" cy="${y(mx).toFixed(1)}" r="2.6" style="fill:var(--bad)"/>
-    <circle cx="${x(vals.length-1).toFixed(1)}" cy="${y(vals[vals.length-1]).toFixed(1)}" r="2.6" style="fill:var(--ink)"/>
+    <path d="${d}" style="fill:none;stroke:var(--acc);stroke-width:1.6;vector-effect:non-scaling-stroke"/>
+    ${dots}
+    ${dot(pi, mx, 2.8, 'var(--bad)')}
+    ${dot(n - 1, vals[n - 1], 2.8, 'var(--ink)')}
   </svg>
-  <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--ink3);margin-top:1px">
-    <span>${y0}</span><span style="color:var(--bad)">▲ ${y0 + pi}년 최다 ${nf(mx)}명</span><span>${y0 + vals.length - 1}</span></div>`;
+  <div class="spkx">
+    <span>${esc(String(labels[0]))}</span>
+    <span style="color:var(--bad)">▲ ${esc(String(labels[pi]) + (opt.ls || ''))} 최다 ${nf(mx)}${unit}</span>
+    <span>${esc(String(labels[n-1]))}</span></div>`;
 }
 
-/* 막대 그래프 — 사업체처럼 값이 몇 개뿐인 시계열용 */
-function bars(labels, vals, unit) {
-  const mx = Math.max(...vals) || 1, mn = Math.min(...vals);
-  const rg = (mx - mn) || 1;
-  return '<div class="bars">' + vals.map((v, i) => {
-    const w = 12 + (v - mn) / rg * 88;                 // 차이가 눈에 보이게 밑을 잘라 그린다
-    const dn = i > 0 && v < vals[i-1], up = i > 0 && v > vals[i-1];
-    return `<div class="br"><span class="l">${labels[i]}</span>
-      <i class="${dn?'dn':up?'up':''}" style="width:${w.toFixed(1)}%"></i>
-      <b>${nf(v)}${unit || ''}</b></div>`;
-  }).join('') + '</div>';
+/* 그래프 한 칸 — 그림 + 밑에 한 줄 설명 */
+function spkBox(vals, labels, opt, caption) {
+  if (!vals || vals.length < 2) return '';
+  return `<div class="spk">${spark(vals, labels, opt)}
+    <div class="spkc">${caption}</div></div>`;
 }
 
 /* 늘었나 줄었나 — 숫자를 안 읽어도 방향이 보이게 */
@@ -2558,9 +2646,9 @@ function declineHTML(hit, p20, areaM2) {
        <span style="color:var(--ink3)">판정 — 최근 30년 최다 대비 20%↑ 감소 <b>${c1a ? '해당' : '미해당'}</b>
        / 최근 5년간 3년 이상 연속 감소 <b>${c1b ? '해당' : '미해당'}</b>(최장 ${pRun}년)</span>`)}
 
-    <div class="spk">${spark(psAll, pAll0)}
-      <div style="font-size:10px;color:var(--ink3);margin-top:2px">${P.nm[G]} 주민등록인구 ${pAll0}~2025${
-      W0 > pAll0 ? ` · 판정은 법정 기준인 <b>최근 30년(${W0}~2025)</b>만 적용` : ''}</div></div>
+    ${spkBox(psAll, psAll.map((_, i) => pAll0 + i), {unit:'명', ls:'년'},
+      `${P.nm[G]} 주민등록인구 ${pAll0}~2025${
+      W0 > pAll0 ? ` · 판정은 법정 기준인 <b>최근 30년(${W0}~2025)</b>만 적용` : ''}`)}
 
     ${row('② 사업체', C2,
       `${G_} 2020년 ${nf(bs[0])}개 → 2024년 ${nf(blast)}개 ${trend(bs[0], blast)}<br>
@@ -2569,15 +2657,14 @@ function declineHTML(hit, p20, areaM2) {
        <span style="color:var(--warn);font-weight:600">10년 최다 대비 5% 기준은 판정하지 않았습니다</span>
        <span style="color:var(--ink3)">— 시군구 사업체 통계가 2020년 등록기반으로 전환되어 2019년 이전 전수조사와 이어 붙일 수 없습니다.</span>`)}
 
-    <div class="spk">${bars(bizLabels, bs, '개')}
-      <div style="font-size:10px;color:var(--ink3);margin-top:2px">${P.nm[G]} 사업체수(등록기반) 2020~2024</div></div>
+    ${spkBox(bs, bizLabels, {unit:'개', ls:'년'}, `${P.nm[G]} 사업체수(등록기반) 2020~2024`)}
 
     ${row('③ 노후건축물', C3,
       `${Z} 준공 20년 이상 <b>${p20.toFixed(1)}%</b> <span style="color:var(--ink3)">(법정 기준 50%)</span>
        — 그린 구역 안 건축물을 직접 산정`)}
 
-    ${window.__eraBar ? `<div class="spk"><div class="eras" style="margin:0;border:none;background:none;padding:0">${window.__eraBar}</div>
-      <div style="font-size:10px;color:var(--ink3);margin-top:2px">그린 구역 건축물의 준공 연대별 분포</div></div>` : ''}
+    ${window.__eraData ? spkBox(window.__eraData.vals, window.__eraData.labels, {unit:'동'},
+      '그린 구역 건축물의 준공 연대별 분포') : ''}
 
     <p class="hint" style="margin-top:9px">
       ⚠ 추정 상주인구는 <b>구 전체 인구 × 구역 내 주거 연면적 비율</b>로 산출한 <b>추정치</b>입니다(면적안분·dasymetric).
