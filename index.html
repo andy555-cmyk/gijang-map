@@ -111,6 +111,8 @@ details.info .body{display:block;padding:0 26px 24px;font-size:14px;color:var(--
 .feat h3{margin:0 0 9px;font-size:13.5px;letter-spacing:.07em;color:var(--sub);text-transform:uppercase}
 .feat p{margin:0;font-size:14.5px;line-height:1.85;color:#cfe0ee}.feat b{color:var(--gold)}
 .foot{margin-top:20px;font-size:13.5px;color:var(--sub);line-height:1.9}
+.nb{white-space:nowrap}
+.lead,.tool p,.card .sub,.qlist span,.soon div,.feat p,.foot{overflow-wrap:break-word;text-wrap:pretty}
 @media(max-width:760px){h1{font-size:31px}.lead{font-size:16px}.hd h2{font-size:20px}
  .hd p{margin-left:0;width:100%}.wrap{padding:48px 18px 66px}}
 </style></head>
@@ -118,35 +120,35 @@ details.info .body{display:block;padding:0 26px 24px;font-size:14px;color:var(--
 <div class="hero">
 <div class="brand">Hay<b>Day</b> · 환경분석맵</div>
 <h1>지도 기반 도시환경 분석</h1>
-<p class="lead">건물 3D 형상에 층수·준공연도·용도지역·인구·점포 자료를 겹쳐 봅니다.<br>노후 건물과 빈집이 몰린 곳, 상권이 옮겨간 방향을 한 화면에서 확인합니다.</p>
+<p class="lead">건물 3D 형상에 층수·준공연도·용도지역·인구·점포 자료 중첩<br>노후건축물·공가(빈집) 밀집구역과 상권 이동 방향을 한 화면에서 확인</p>
 </div>
 <div class="main">
 <div class="rail">
-<div><div class="hd"><span class="eyebrow k-g">도구</span><h2>내 자료 분석</h2><p></p></div><a class="tool" href="./gis.html"><h3>GIS 분석 도구</h3><div class="big"><div class="n">472,608</div><div class="u">동 · 부산 전역 건물 내장</div></div><p><b>SHP·ZIP·GeoJSON</b> 파일을 올리면 좌표계와 한글 깨짐을 자동으로 잡습니다. 링 방향·자기교차·용도지역 코드 불일치 등 <b>13가지를 검사</b>합니다. 지도에 원이나 다각형을 그리면 그 범위의 <b>도시재생 쇠퇴 3요건</b>을 판정합니다.</p><div class="chips"><span>좌표계 자동판별</span><span>CP949 한글 복원</span><span>품질검사 13종</span><span>쇠퇴 3요건 판정</span><span>설치 없음</span></div><span class="go">열기 →</span></a></div>
+<div><div class="hd"><span class="eyebrow k-g">도구</span><h2>내 자료 분석</h2><p></p></div><a class="tool" href="./gis.html"><h3>GIS 분석 도구</h3><div class="big"><div class="n">472,608</div><div class="u">동 · 부산 전역 건물 내장</div></div><p><b>SHP·ZIP·GeoJSON</b> 파일 업로드 시 좌표계·한글 깨짐 자동 보정. 링 방향·자기교차·용도지역 코드 불일치 등 <b>13종 품질검사</b> 수행. 지도에 원·다각형 작도 시 해당 범위의 <b>도시재생 쇠퇴지표 3요건</b><span class="nb">(인구·사업체수·노후건축물) 판정.</span></p><div class="chips"><span>좌표계 자동판별</span><span>CP949 한글 복원</span><span>품질검사 13종</span><span>쇠퇴지표 3요건 판정</span><span>설치 없음</span></div><span class="go">열기 →</span></a></div>
 </div>
 <div class="body">
-<div><div class="hd"><span class="eyebrow k-r">대상지</span><h2>진행 중인 사업지</h2><p>5곳</p></div><div class="grid"><a class="card" href="./gimhae-wondosim.html"><div class="place">경남 김해시</div><h3>김해 원도심</h3><p class="sub">초광역권 도시재생 · 동상·부원·회현·북부동</p><span class="open">열기 →</span></a><a class="card" href="./seogu.html"><div class="place">부산 서구</div><h3>부산 서구 전역</h3><p class="sub">남부민동 611 일원 · 빈집 밀집구역 판정</p><span class="open">열기 →</span></a><a class="card" href="./saha.html"><div class="place">부산 사하구</div><h3>사하 신평·장림</h3><p class="sub">신평장림산단 · FutureVibe-01 마스터플랜</p><span class="open">열기 →</span></a><a class="card" href="./pohang.html"><div class="place">포항 북구 중앙동</div><h3>포항 원도심 3권역</h3><p class="sub">공구거리 · 실개천 · 야시장 3권역</p><span class="open">열기 →</span></a><a class="card" href="./gijang.html"><div class="place">부산 기장군</div><h3>기장 만화천</h3><p class="sub">원도심 통합재생 대상지</p><span class="open">열기 →</span></a></div></div>
+<div><div class="hd"><span class="eyebrow k-r">대상지</span><h2>진행 중인 사업지</h2><p>5곳</p></div><div class="grid"><a class="card" href="./gimhae-wondosim.html"><div class="place">경남 김해시</div><h3>김해 원도심</h3><p class="sub">초광역권 도시재생&nbsp;· <span class="nb">동상·부원·회현·북부동</span></p><span class="open">열기 →</span></a><a class="card" href="./seogu.html"><div class="place">부산 서구</div><h3>부산 서구 전역</h3><p class="sub">남부민동 611 일원&nbsp;· <span class="nb">빈집밀집구역 3요건 판정</span></p><span class="open">열기 →</span></a><a class="card" href="./saha.html"><div class="place">부산 사하구</div><h3>사하 신평·장림</h3><p class="sub">신평장림산단 재생&nbsp;· <span class="nb">FutureVibe-01 마스터플랜</span></p><span class="open">열기 →</span></a><a class="card" href="./pohang.html"><div class="place">포항 북구 중앙동</div><h3>포항 원도심 3권역</h3><p class="sub">공구거리&nbsp;· 실개천&nbsp;· <span class="nb">야시장 3권역</span></p><span class="open">열기 →</span></a><a class="card" href="./gijang.html"><div class="place">부산 기장군</div><h3>기장 만화천</h3><p class="sub">원도심 통합재생 대상지</p><span class="open">열기 →</span></a></div></div>
 <div class="duo">
-<div><div class="hd"><span class="eyebrow k-t">주제도</span><h2>지역 단위 주제도</h2><p></p></div><a class="card" href="./busan-traffic.html"><div class="place">부산 전역</div><h3>부산 도로교통망</h3><p class="sub">퇴근 피크 통행속도 · 속도비 · 도로위계</p><span class="open">열기 →</span></a></div>
-<div><div class="hd"><span class="eyebrow k-n">준비 중</span><h2>개발 중인 기능</h2><p>미공개</p></div><div class="soon"><div><b>야간 조도</b>현장 조도 측정 → 조명 개선 미리보기</div><div><b>건물 입면도</b>연속 사진 → 가로 입면 전개도</div><div><b>유동인구</b>버스 승하차 × 상권 매출</div></div></div>
+<div><div class="hd"><span class="eyebrow k-t">주제도</span><h2>지역 단위 주제도</h2><p></p></div><a class="card" href="./busan-traffic.html"><div class="place">부산 전역</div><h3>부산 도로교통망</h3><p class="sub">퇴근 피크 통행속도&nbsp;· <span class="nb">속도비 · 도로위계</span></p><span class="open">열기 →</span></a></div>
+<div><div class="hd"><span class="eyebrow k-n">준비 중</span><h2>개발 중인 기능</h2><p>미공개</p></div><div class="soon"><div><b>야간 조도</b>현장 조도 실측 → <span class="nb">조명 개선 미리보기</span></div><div><b>건물 입면도</b>연속 사진 → <span class="nb">가로 입면 전개도</span></div><div><b>유동인구</b>버스 승하차 × <span class="nb">상권 매출</span></div></div></div>
 </div>
 </div>
 </div>
-<div class="full"><div class="hd"><span class="eyebrow k-n">찾기</span><h2>질문으로 찾기</h2><p>어디를 열지 모를 때</p></div><div class="qlist"><a href="./gimhae-wondosim.html"><b>상권이 어디로 옮겨갔나</b><span>동네별 점포 수와 빈 점포<br><i>김해 원도심 →</i></span></a><a href="./seogu.html"><b>어디부터 정비할까</b><span>낡은 건물·빈집이 몰린 곳<br><i>부산 서구 · 포항 →</i></span></a><a href="./gimhae-wondosim.html"><b>가게가 줄고 있나</b><span>사업체수 9개년 · 도시재생 3대 지표<br><i>김해 원도심 →</i></span></a><a href="./seogu.html"><b>빈집이 어디 몰려 있나</b><span>반경을 그리면 3요건 즉시 판정<br><i>부산 서구 →</i></span></a><a href="./saha.html"><b>공장이 어디에 몰려 있나</b><span>등록공장 1,161개 위치·업종 밀도<br><i>사하 →</i></span></a><a href="./busan-traffic.html"><b>길이 어디서 막히나</b><span>제한속도 대비 속도비로 비교<br><i>부산 전역 →</i></span></a></div></div>
+<div class="full"><div class="hd"><span class="eyebrow k-n">찾기</span><h2>질문으로 찾기</h2><p>어디를 열지 모를 때</p></div><div class="qlist"><a href="./gimhae-wondosim.html"><b>상권이 어디로 옮겨갔나</b><span>행정동별 점포수&nbsp;· <span class="nb">공실 점포</span><br><i>김해 원도심 →</i></span></a><a href="./seogu.html"><b>어디부터 정비할까</b><span>노후건축물&nbsp;· <span class="nb">공가 밀집구역</span><br><i>부산 서구 · 포항 →</i></span></a><a href="./gimhae-wondosim.html"><b>가게가 줄고 있나</b><span>사업체수 9개년&nbsp;· <span class="nb">도시재생 쇠퇴지표 3종</span><br><i>김해 원도심 →</i></span></a><a href="./seogu.html"><b>빈집이 어디 몰려 있나</b><span>반경 작도 시 3요건 즉시 판정<br><i>부산 서구 →</i></span></a><a href="./saha.html"><b>공장이 어디에 몰려 있나</b><span>등록공장 1,161개 위치&nbsp;· <span class="nb">업종 밀도</span><br><i>사하 →</i></span></a><a href="./busan-traffic.html"><b>길이 어디서 막히나</b><span>제한속도 대비 속도비 비교<br><i>부산 전역 →</i></span></a></div></div>
 <div class="legend"><span class="l-g">도구 1</span><span class="l-r">대상지 5곳</span><span class="l-t">주제도 1</span></div>
 <details class="info"><summary>엔진 공통 기능 · 데이터 출처 · 한계</summary><div class="body"><div class="feat"><h3>엔진 공통 기능</h3>
-  <p>건물 단위 3D 압출과 클릭 상세, 층수·용도지역·노후도 3종 현황분석 전환, 노후 밴드별 개별 필터,
-  층수 필터와 사업구역 내 건물만 보기. 서구판에는 <b>빈집밀집구역 3요건 자동판정기</b>와
-  지도를 클릭해 반경을 그리면 구역 요건을 실시간 집계하는 <b>구역 시뮬레이터</b>,
-  KOSIS 주민등록 인구 시계열(2011~2025)이 추가되어 있습니다. 사하구판은 <b>노후 산단</b>용으로, 빈집 레이어 대신 <b>등록공장 1,161개의 위치·업종 분포와 밀도(열분포)</b>, 공업지역 기반 대상지, 마스터플랜 A~G 단위사업을 담았습니다. 레이어 선택창과 값 표시창을 <b>좌우로 분리</b>했습니다. 부산 도로교통망 분석판은 지역 진단이 아니라 <b>도로망 자체</b>를 다룹니다. 국토교통부 표준노드링크에 부산시 관측 통행속도를 조인해 <b>제한속도 대비 속도비</b>로 위계가 다른 도로를 한 잣대에 놓고, 도로 위계를 끄고 켜서 간선만 볼 수 있으며, 속도가 관측되지 않는 도로는 어두운 배경망으로 함께 깔아 도로망 형태가 끊기지 않게 했습니다.</p></div>
+  <p>건물 단위 3D 압출 및 클릭 상세, 층수·용도지역·노후도 3종 현황분석 전환, 노후 밴드별 개별 필터,
+  층수 필터 및 사업구역 내 건물 한정 표시 지원. 서구판에는 <b class="nb">빈집밀집구역 3요건 자동판정기</b>,
+  지도 클릭으로 반경 작도 시 구역 요건을 실시간 집계하는 <b class="nb">구역 시뮬레이터</b>,
+  KOSIS 주민등록 인구 시계열(<span class="nb">2011~2025</span>) 추가. 사하구판은 <b class="nb">노후 산업단지 재생</b>용으로 공가 레이어 대신 <b>등록공장 1,161개의 위치·업종 분포와 밀도(열분포)</b>, 공업지역 기반 대상지, 마스터플랜 A~G 단위사업 수록. 레이어 선택창과 값 표시창은 <b class="nb">좌우 분리</b>. 부산 도로교통망 분석판은 지역 진단이 아니라 <b class="nb">도로망 자체</b>가 대상. 국토교통부 표준노드링크에 부산시 관측 통행속도를 조인해 <b class="nb">제한속도 대비 속도비</b>로 위계가 다른 도로를 한 잣대에 배치, 도로 위계 개별 표시로 간선가로만 조회 가능, 속도 미관측 도로는 어두운 배경망으로 병행 표시해 도로망 형태 연속성 확보.</p></div>
 
-  <div class="foot">GIS 탭 데이터: 국토교통부 GIS건물통합정보 부산 전역(2026-08-09, 472,608동·302,958필지) ·
-  통계청 KOSIS 「행정구역(시군구)별 성별 인구수」(주민등록 1992~2025) · 통계청 「사업체수(등록기반)」(2020~2024).
-  사업체는 2020년 등록기반으로 조사 기준이 바뀌어 2019년 이전 전수조사와 이어 붙이지 않았고,
-  1995년 구 경계가 바뀐 동래·남·북·연제·수영·사상·기장은 그 이전 인구를 판정에 쓰지 않았습니다.
-  구역 안 인구는 구 인구를 주거 연면적으로 나눈 <b>추정치</b>이며 실측이 아닙니다.<br/><br/>
+  <div class="foot">GIS 탭 데이터: 국토교통부 GIS건물통합정보 부산 전역(<span class="nb">2026-08-09</span>, 472,608동·302,958필지) ·
+  통계청 KOSIS 「행정구역(시군구)별 성별 인구수」(주민등록 <span class="nb">1992~2025</span>) · 통계청 「사업체수(등록기반)」(<span class="nb">2020~2024</span>).
+  사업체수는 2020년 등록기반으로 조사 기준 변경, 2019년 이전 전수조사와 미연결.
+  1995년 구 경계가 변경된 동래·남·북·연제·수영·사상·기장은 그 이전 인구를 판정에서 제외.
+  구역 내 인구는 구 인구를 주거 연면적으로 안분한 <b>추정치</b>로 실측값 아님.<br/><br/>
   데이터: VWorld 건물통합정보·연속지적도·용도지역 · 건축물대장 표제부(준공연도·지상층수) ·
-  KOSIS 주민등록인구 · 부산 서구 고시 제2025-54호 빈집정비계획(2025) · 빈집애 누리집 법정동별 빈집(2026) · 위성영상 Esri · <b>부산광역시 제조업 공장등록현황(2025-12-31)</b> · <b>국토교통부 표준노드링크(2026-07-16)</b> · <b>부산광역시 교통정보서비스센터 지능형교통정보 구간레벨패턴정보(2026-06)</b><br/>
-  서구판 층수는 건축물대장 지상층수 기준입니다. 준공연도 미확인 물량 및 구역 경계 추정 구간은 각 화면 안에 명시되어 있습니다.<br/>사하구판의 준공연도·건축물용도·연면적은 국토부 건축물대장 오픈API(건축HUB)가 공공데이터포털 개편(2026-07-29~08-02)으로 응답하지 않아 <b>미확보</b> 상태이며, 화면 안에 그대로 표기했습니다. 노후도 30년 판정은 해당 값 확보 후 표시됩니다.<br/>빈집 수치는 조사주체·정의·시점에 따라 서구 고시 683호와 빈집애 1,855호로 갈립니다. 두 값은 별개 지표로 분리 표기되며 합산·비교 불가입니다.</div>
+  KOSIS 주민등록인구 · 부산 서구 고시 <span class="nb">제2025-54호</span> 빈집정비계획(2025) · 빈집애 누리집 법정동별 빈집(2026) · 위성영상 Esri · <b>부산광역시 제조업 공장등록현황(<span class="nb">2025-12-31</span>)</b> · <b>국토교통부 표준노드링크(<span class="nb">2026-07-16</span>)</b> · <b>부산광역시 교통정보서비스센터 지능형교통정보 구간레벨패턴정보(<span class="nb">2026-06</span>)</b><br/>
+  서구판 층수는 건축물대장 지상층수 기준. 준공연도 미확인 물량 및 구역 경계 추정 구간은 각 화면 내 명시.<br/>사하구판의 준공연도·건축물용도·연면적은 국토부 건축물대장 오픈API(건축HUB)의 공공데이터포털 개편(<span class="nb">2026-07-29~08-02</span>)에 따른 응답 중단으로 <b>미확보</b> 상태이며, 화면 내 그대로 표기. 노후건축물 30년 판정은 해당 값 확보 후 표시 예정.<br/>공가(빈집) 수치는 조사주체·정의·시점에 따라 서구 고시 683호와 빈집애 1,855호로 상이. 두 값은 별개 지표로 분리 표기, 합산·비교 불가.</div>
 </div></details>
 </div></body></html>

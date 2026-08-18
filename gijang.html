@@ -54,13 +54,13 @@ input[type=range]{width:100%;accent-color:var(--acc);margin-top:6px}
 <div id="map"></div><div id="vignette"></div>
 <div id="top"><div class="brand">Hay<b>Day</b> · 환경분석맵</div>
 <div class="site">● 기장 만화천 · 원도심 통합재생 대상지</div><div class="rgsw"><a href="./gijang.html" class="rgon">기장 만화천</a><a href="./seogu.html" class="rg">부산 서구</a><a href="./saha.html" class="rg">부산 사하구</a><a href="./busan-traffic.html" class="rg">부산 교통망</a><a href="./pohang.html" class="rg">포항 원도심</a><a href="./gimhae-wondosim.html" class="rg">김해 원도심</a><a href="./gis.html" class="rg rggis" title="내 파일을 올려서 바로 분석">GIS</a><a href="./" class="rghome" title="지역 선택">전체</a></div><div class="spacer"></div>
-<div class="credit">데이터: VWorld 건물·용도지역 · 건축물대장(준공연도) · KOSIS 주민등록 · 위성 Esri</div></div>
+<div class="credit">데이터: VWorld <span style="white-space:nowrap">건물·용도지역</span> · <span style="white-space:nowrap">건축물대장(준공연도)</span> · <span style="white-space:nowrap">KOSIS 주민등록</span> · <span style="white-space:nowrap">위성 Esri</span></div></div>
 <div id="panel">
   <div class="sec"><h3>레이어</h3>
-    <div class="toggle"><span>건물 3D</span><div class="sw on" id="t-bld"></div></div>
+    <div class="toggle"><span>건축물 3D</span><div class="sw on" id="t-bld"></div></div>
     <div class="toggle"><span>만화천 수계</span><div class="sw on" id="t-water"></div></div>
-    <div class="toggle"><span>사업구역 경계</span><div class="sw on" id="t-site"></div></div>
-    <div class="toggle"><span>위성 베이스</span><div class="sw on" id="t-sat"></div></div></div>
+    <div class="toggle"><span><span style="white-space:nowrap">활성화지역(사업구역)</span> 경계</span><div class="sw on" id="t-site"></div></div>
+    <div class="toggle"><span>위성영상 베이스맵</span><div class="sw on" id="t-sat"></div></div></div>
   <div class="sec"><h3>현황 분석 (3종)</h3>
     <div class="seg"><button id="m-height" class="on">층수</button><button id="m-zone">용도</button><button id="m-age">노후도</button></div>
     <div id="lg-height"><div class="rampbar"></div><div class="lb"><span>1층</span><span>6층</span><span>15층</span><span>26층+</span></div></div>
@@ -69,14 +69,14 @@ input[type=range]{width:100%;accent-color:var(--acc);margin-top:6px}
   <div class="sec"><h3>층수 필터</h3>
     <div id="floorLab"><b id="fv">1</b>층 이상만 표시</div>
     <input type="range" id="floor" min="1" max="26" value="1"/>
-    <div class="toggle" style="margin-top:4px"><span>사업구역 내 건물만</span><div class="sw" id="t-only"></div></div></div>
+    <div class="toggle" style="margin-top:4px"><span>활성화지역 내 건축물만</span><div class="sw" id="t-only"></div></div></div>
   <div class="sec"><h3>현황 통계</h3>
-    <div class="stat"><span>표시 건물</span><b id="s-count">–</b></div>
+    <div class="stat"><span>표시 건축물</span><b id="s-count">–</b></div>
     <div class="stat"><span>평균 지상층수</span><b id="s-avg">–</b></div>
     <div class="stat"><span>최고 층수</span><b id="s-max">–</b></div>
     <div class="stat"><span>노후율 (미상+30년+)</span><b class="dn" id="s-old">49.1%</b></div>
     <div class="dist" id="dist"></div>
-    <div class="note">노후 기준은 <b>준공 후 30년</b>이다(대표 확정 2026-07-30). 노후율 = (30년+ <b>1,013동</b> + 준공일 미상 <b>672동</b>) ÷ 전체 <b>3,430동</b> = <b>49.1%</b>. 부산 서구와 같은 정의(미상+30년+)를 쓴다.</div></div>
+    <div class="note">노후건축물(준공 후 30년 경과 건축물) 판정 기준 = <b>준공 후 30년</b>(대표 확정 2026‑07‑30). 노후율 = (30년+ <b>1,013동</b> + 준공일 미상 <b>672동</b>) ÷ 전체 <b>3,430동</b> = <b>49.1%</b>. 부산 서구와 동일 정의(미상+30년+) 적용.</div></div>
   <div class="sec"><h3>인구·인구학 <span class="src">KOSIS 주민등록 · 기장읍</span></h3>
     <div class="stat"><span>기장읍 인구(2025)</span><b id="p-cur">–</b></div>
     <div class="stat"><span>정점(2018) 대비</span><b class="dn" id="p-chg">–</b></div>
@@ -87,12 +87,12 @@ input[type=range]{width:100%;accent-color:var(--acc);margin-top:6px}
     <button class="dlbtn" id="pop-dl">인구 그래프 PNG 저장</button></div>
 </div>
 <div id="info"><span class="cl" id="i-close">✕</span>
-  <div class="t" id="i-tag">건물</div>
+  <div class="t" id="i-tag">건축물</div>
   <div class="g"><span>지상 층수</span><b id="i-fl">–</b></div>
   <div class="g"><span>높이(추정)</span><b id="i-h">–</b></div>
   <div class="g"><span>용도지역</span><b id="i-z">–</b></div>
   <div class="g"><span>준공연도</span><b id="i-age">–</b></div></div>
-<div id="hint">드래그 회전 · 스크롤 줌 · 우클릭 기울이기 · 건물 클릭 시 상세</div>
+<div id="hint">드래그 회전 · 스크롤 줌 · 우클릭 기울이기 · 건축물 클릭 시 상세</div>
 <script>/**
  * MapLibre GL JS
  * @license 3-Clause BSD. Full text of license: https://github.com/maplibre/maplibre-gl-js/blob/v4.7.1/LICENSE.txt
@@ -182,9 +182,12 @@ map.on('load',window.__I=()=>{
   map.addLayer({id:'buildings-3d',type:'fill-extrusion',source:'bld',paint:{'fill-extrusion-height':['get','h'],'fill-extrusion-base':0,'fill-extrusion-opacity':0.95,'fill-extrusion-color':colorExpr('height')}});
   applyFilter();wireHover();computeStats();buildLegends();
 });
+function _sl(id,k,v){try{if(map.getLayer(id))map.setLayoutProperty(id,k,v);}catch(e){}}
+function _sp(id,k,v){try{if(map.getLayer(id))map.setPaintProperty(id,k,v);}catch(e){}}
+function _sf(id,f){try{if(map.getLayer(id))map.setFilter(id,f);}catch(e){}}
 function applyFilter(){const f=['all',['>=',['get','levels'],minFloor]];if(onlySite)f.push(['==',['get','site'],1]);
   if(mode==='age'&&ageSel.size<5){const any=['any'];ageSel.forEach(b=>{any.push(b===0?['match',['get','ab'],[1,2,3,4],false,true]:['==',['get','ab'],b]);});f.push(any);}
-  map.setFilter('buildings-3d',f);computeStats();}
+  _sf('buildings-3d',f);computeStats();}
 function computeStats(){let n=0,sum=0,mx=0,b1=0,b2=0,b3=0;const ac=[0,0,0,0,0];
   for(const ft of BUILDINGS.features){const p=ft.properties;const fl=p.levels||1;if(fl<minFloor)continue;if(onlySite&&p.site!==1)continue;
     const ab=(p.ab>=1&&p.ab<=4)?p.ab:0;ac[ab]++;
@@ -198,7 +201,7 @@ function computeStats(){let n=0,sum=0,mx=0,b1=0,b2=0,b3=0;const ac=[0,0,0,0,0];
   else if(mode==='age') rows=[[1,'신축 <10년','#4fae8e'],[2,'10~20년','#a8c95a'],[3,'20~30년','#f0a93e'],[4,'30년+ 노후','#d64545'],[0,'준공 미상','#4a4f57']].map(([bd,l,c])=>[l,ac[bd],c,bd]);
   else rows=[['저층 1–2층',b1,'#efe4d0',null],['중층 3–5층',b2,'#f0b060',null],['고층 6층+',b3,'#e8663a',null]];
   const mxb=Math.max(...rows.map(r=>r[1]),1);
-  document.getElementById('dist').innerHTML=rows.map(r=>{const off=(mode==='age'&&r[3]!==null&&!ageSel.has(r[3]))?' style="opacity:.3"':'';return `<div class="distrow"${off}><span class="lab" title="${r[0]}">${r[0]}</span><span class="bar"><i style="width:${r[1]/mxb*100}%;background:${r[2]}"></i></span><span class="nn">${r[1]}</span></div>`;}).join('');
+  document.getElementById('dist').innerHTML=rows.map(r=>{const off=(mode==='age'&&r[3]!==null&&!ageSel.has(r[3]))?' style="opacity:.3"':'';return `<div class="distrow"${off}><span class="lab" title="${r[0]}">${r[0]}</span><span class="bar"><i style="width:${r[1]>0?Math.max(2.5,r[1]/mxb*100).toFixed(1):0}%;background:${r[2]}"></i></span><span class="nn">${r[1]}</span></div>`;}).join('');
 }
 function buildLegends(){
   document.getElementById('lg-zone').innerHTML=ZDIST.map(([l,v,c])=>`<div class="legrow"><span class="sw2" style="background:${c}"></span>${l}<span class="n">${v}</span></div>`).join('');
@@ -207,7 +210,7 @@ function buildLegends(){
 function renderAgeLegend(){const all=ageSel.size===5;
   const hint=`<div class="leghint"><span>밴드 클릭 · 연차별 필터</span><span class="legall" id="age-all">${all?'전체 표시중':'전체 표시'}</span></div>`;
   const rows=AGEBANDS.map(([bd,l,v,c])=>`<div class="legrow${ageSel.has(bd)?'':' off'}" data-b="${bd}"><span class="sw2" style="background:${c}"></span>${l}<span class="n">${v}</span></div>`).join('');
-  const note=`<div class="note">준공연도는 <b>건축물대장(사용승인일)</b> 실데이터입니다. 현재 <b>${MATCHED.toLocaleString()}동</b> 확인 · 나머지는 대장 미등재(대개 초노후·부속·무허가).</div>`;
+  const note=`<div class="note">준공연도 = <b><span style="white-space:nowrap">건축물대장(사용승인일)</span></b> 실측자료. 현재 <b>${MATCHED.toLocaleString()}동</b> 확인&nbsp;· 나머지는 대장 미등재(대개 <span style="white-space:nowrap">초노후·부속·무허가</span> 건축물).</div>`;
   const el=document.getElementById('lg-age');el.innerHTML=hint+rows+note;
   el.querySelectorAll('.legrow').forEach(r=>r.onclick=()=>toggleAge(+r.dataset.b));
   document.getElementById('age-all').onclick=e=>{e.stopPropagation();resetAge();};
@@ -218,7 +221,7 @@ function wireHover(){
   map.on('mousemove','buildings-3d',e=>{map.getCanvas().style.cursor='pointer';if(e.features.length&&selId===null)hl(e.features[0].id);});
   map.on('mouseleave','buildings-3d',()=>{map.getCanvas().style.cursor='';});
   map.on('click','buildings-3d',e=>{if(!e.features.length)return;const p=e.features[0].properties;selId=e.features[0].id;hl(selId);
-    document.getElementById('i-tag').textContent=(p.site==1?'사업구역 내 건물':'주변 건물');
+    document.getElementById('i-tag').textContent=(p.site==1?'활성화지역 내 건축물':'활성화지역 외 건축물');
     document.getElementById('i-fl').textContent='지상 '+(p.levels)+'층';
     document.getElementById('i-h').textContent='약 '+p.h+'m';
     document.getElementById('i-z').textContent=p.z||'미지정';
@@ -230,17 +233,17 @@ function wireHover(){
 function hl(id){if(hovId!==null)map.setFeatureState({source:'bld',id:hovId},{hover:false});hovId=id;map.setFeatureState({source:'bld',id:id},{hover:true});}
 function closeInfo(){selId=null;if(hovId!==null){map.setFeatureState({source:'bld',id:hovId},{hover:false});hovId=null;}document.getElementById('info').classList.remove('show');}
 function tog(id,fn){const el=document.getElementById(id);el.addEventListener('click',()=>{el.classList.toggle('on');fn(el.classList.contains('on'));});}
-tog('t-bld',v=>map.setLayoutProperty('buildings-3d','visibility',v?'visible':'none'));
-tog('t-water',v=>['water-glow','water-line'].forEach(l=>map.setLayoutProperty(l,'visibility',v?'visible':'none')));
-tog('t-site',v=>['site-fill','site-line'].forEach(l=>map.setLayoutProperty(l,'visibility',v?'visible':'none')));
-tog('t-sat',v=>map.setLayoutProperty('sat','visibility',v?'visible':'none'));
+tog('t-bld',v=>_sl('buildings-3d','visibility',v?'visible':'none'));
+tog('t-water',v=>['water-glow','water-line'].forEach(l=>_sl(l,'visibility',v?'visible':'none')));
+tog('t-site',v=>['site-fill','site-line'].forEach(l=>_sl(l,'visibility',v?'visible':'none')));
+tog('t-sat',v=>_sl('sat','visibility',v?'visible':'none'));
 tog('t-only',v=>{onlySite=v;applyFilter();});
 function setMode(m){mode=m;['height','zone','age'].forEach(x=>document.getElementById('m-'+x).classList.toggle('on',x===m));
   document.getElementById('lg-height').style.display=m==='height'?'block':'none';
   document.getElementById('lg-zone').style.display=m==='zone'?'block':'none';
   document.getElementById('lg-age').style.display=m==='age'?'block':'none';
-  const zv=m==='zone'?'visible':'none';map.setLayoutProperty('zone-fill','visibility',zv);map.setLayoutProperty('zone-line','visibility',zv);
-  map.setPaintProperty('buildings-3d','fill-extrusion-color',colorExpr(m));renderAgeLegend();applyFilter();}
+  const zv=m==='zone'?'visible':'none';_sl('zone-fill','visibility',zv);_sl('zone-line','visibility',zv);
+  _sp('buildings-3d','fill-extrusion-color',colorExpr(m));renderAgeLegend();applyFilter();}
 document.getElementById('m-height').onclick=()=>setMode('height');
 document.getElementById('m-zone').onclick=()=>setMode('zone');
 document.getElementById('m-age').onclick=()=>setMode('age');
@@ -263,7 +266,7 @@ function renderPop(){
   document.getElementById('p-chg').textContent='-'+dropPct+'%';
   document.getElementById('p-old').textContent=POP.old+'%';
   document.getElementById('p-young').textContent=POP.young+'%';
-  document.getElementById('popdiag').innerHTML=`<b>진단:</b> ${POP.peak.y}년 ${POP.peak.v.toLocaleString()}명 정점 후 ${POP.cur.y}년 ${POP.cur.v.toLocaleString()}명으로 <b>${dropPct}% 감소</b>. 65세+ ${POP.old}%로 <b>초고령사회</b>, 유소년 ${POP.young}%·노령화지수 ${POP.agi} — 원도심 인구 쇠퇴·고령화 정량 확인.`;
+  document.getElementById('popdiag').innerHTML=`<b>진단:</b> ${POP.peak.y}년 ${POP.peak.v.toLocaleString()}명 정점 후 ${POP.cur.y}년 ${POP.cur.v.toLocaleString()}명 <b>${dropPct}% 감소</b>. 65세+ ${POP.old}% <b>초고령사회</b> 해당&nbsp;· 유소년 ${POP.young}%&nbsp;· 노령화지수 ${POP.agi} — 원도심 인구감소·고령화 등 도시재생 쇠퇴지표(인구·산업·건축물 쇠퇴 판정 기준) 정량 확인.`;
 }
 document.getElementById('pop-dl').onclick=()=>{
   const svg=document.getElementById('popsvg');if(!svg)return;
@@ -274,6 +277,7 @@ document.getElementById('pop-dl').onclick=()=>{
   img.src='data:image/svg+xml;base64,'+btoa(unescape(encodeURIComponent(xml)));
 };
 renderPop();
+try{computeStats();buildLegends();}catch(e){}
 </script><script>(function(){var n=0;var t=setInterval(function(){n++;try{if(window.map&&map.isStyleLoaded&&map.isStyleLoaded()){if(!map.getLayer('buildings-3d')&&window.__I){window.__I();}clearInterval(t);}}catch(e){}if(n>120)clearInterval(t);},250);})();</script>
 <style id="hayday-shell-css">
 /* ── HAYDAY_SHELL_V5 : 헤더 아래 전폭 탭바 + 그 아래 패널 ──────────── */
@@ -688,7 +692,7 @@ body.pmode #hdprint{top:7px;right:16px;padding:6px 11px}
 @media print{#hdprint,#hdsrc{display:none!important}}
 </style>
 <div id="hdbar"><b>HayDay · 환경분석맵 — 기장 만화천</b><span>VWorld 건물통합정보·연속지적도·용도지역 · 건축물대장 표제부(준공연도·지상층수) · 위성영상 Esri</span></div>
-<div id="hdsrc"><div class="hh" onclick="this.parentNode.classList.toggle('on')">데이터 출처 <i>· 눌러서 펼치기</i></div><div class="bd">VWorld 건물통합정보·연속지적도·용도지역 · 건축물대장 표제부(준공연도·지상층수) · 위성영상 Esri</div></div>
+<div id="hdsrc"><div class="hh" onclick="this.parentNode.classList.toggle('on')">데이터 출처 <i>· 눌러서 펼치기</i></div><div class="bd"><span style="white-space:nowrap">VWorld 건물통합정보·연속지적도·용도지역</span> · <span style="white-space:nowrap">건축물대장 표제부(준공연도·지상층수)</span> · <span style="white-space:nowrap">위성영상 Esri</span></div></div>
 <button id="hdprint" onclick="hdPrint()">인쇄용 보기</button>
 <script id="hd-ext-js">
 function hdPrint(){
@@ -723,6 +727,36 @@ body.pfold #detail{display:none!important}
 #detail::-webkit-scrollbar-thumb:hover,.pane::-webkit-scrollbar-thumb:hover{background:#4a5464}
 #detail::-webkit-scrollbar-corner{background:transparent}
 </style>
+<style id="hd-qa-css">
+/* ── 한글 화면 점검 키트 적용 (2026-08-18) — 패널 id 는 #detail ───────── */
+/* ① 한글은 낱말 중간에서 꺾지 않는다 */
+#detail,#detail *,#top,#top *,#info,#info *,#hint,#hdsrc,#hdsrc *,#hdbar,#hdbar *,#navlist,#navlist *{word-break:keep-all}
+#detail,#top .credit,#top .site,#info,#hint,#hdsrc .bd{overflow-wrap:break-word;text-wrap:pretty}
+/* ② 탭 띠가 반투명이면 아래 지도가 비쳐 글이 읽히지 않는다 */
+#panel{background:#0d1117!important}
+/* ③ 번호·기호 목록은 표식과 본문을 두 칸으로 */
+.li{display:flex;gap:6px;align-items:flex-start;margin:2px 0}
+.li>b,.li>span:first-child{flex:0 0 auto}
+.li>.lit{flex:1 1 auto;min-width:0}
+/* ④ 숫자 안에 <span> 이 있으면 부모 크기를 따르게 */
+#detail .stat b span,#detail .big b span,#detail .kpi b span{font-size:inherit;color:inherit;font-weight:inherit;line-height:inherit}
+/* ⑤ 빈 상자·이중 밑줄 (class·id 가 붙은 기능 요소는 건드리지 않는다) */
+#detail-b div:empty:not([class]):not([id]){display:none}
+#detail h3+h3{border-top:0;padding-top:0;margin-top:4px}
+#detail table tr:last-child td{border-bottom:0}
+/* ⑥ 칸 4개짜리 숫자 묶음은 3+1 로 깨지지 않게 */
+.kpi:has(>div:nth-child(4):last-child){grid-template-columns:repeat(2,1fr)}
+/* ⑦ 분포 막대 — 이름칸이 88px 고정이라 「제2종일반주거」가 잘렸다. 글자에 맞춰 늘린다 */
+#detail-b .distrow .lab{width:auto;flex:0 1 auto;max-width:56%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#detail-b .distrow .bar{flex:1 1 auto;min-width:46px}
+#detail-b .distrow .nn{flex:0 0 auto;width:auto;min-width:36px;text-align:right;font-variant-numeric:tabular-nums}
+#detail-b .stat b,#detail-b .legrow .n{font-variant-numeric:tabular-nums}
+/* ⑧ 우상단 — 베이스맵 단추와 「인쇄용 보기」가 겹쳤다(레이어 붙는 순서에 따라 들쭉날쭉) */
+#detail-h{background:#11151d!important}
+#bmsw{top:66px!important}
+body:not(.pmode) #hdprint{top:64px!important;right:186px!important}
+@media (max-width:1100px){#bmsw{top:104px!important}body:not(.pmode) #hdprint{right:12px!important}}
+</style>
 <script id="pzr-js">
 /* 왼쪽 정보란 폭 조절 — 6개 지도 공통 규격
    · 드래그로 18~45% · 더블클릭이면 기본 25% · 접기 단추로 통째로 숨김
@@ -751,7 +785,7 @@ body.pfold #detail{display:none!important}
   var grip,fold;
   function make(){
     grip=document.createElement('div'); grip.id='pzr';
-    grip.title='드래그해서 정보란 폭 조절 (18~45%, 더블클릭 = 기본 25%)';
+    grip.title='정보란 폭 조절 — 드래그(18~45%) · 더블클릭 시 기본 25%';
     grip.innerHTML='<span class="ar">◁▷</span>';
     document.body.appendChild(grip);
     grip.addEventListener('mousedown',start);
