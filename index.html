@@ -2,126 +2,132 @@
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>환경분석맵 | HayDay</title>
 <style>
-:root{--bg:#0b0e13;--panel:rgba(16,20,28,.93);--line:rgba(255,255,255,.09);--ink:#eef2f7;--sub:#93a3b6;--acc:#ff7a5c}
-*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:
- radial-gradient(1200px 700px at 15% -10%,rgba(255,122,92,.10),transparent 60%),
- radial-gradient(900px 600px at 90% 110%,rgba(120,160,220,.10),transparent 60%),var(--bg);
- color:var(--ink);font-family:'Pretendard','Malgun Gothic',system-ui,sans-serif}
-.wrap{max-width:1000px;margin:0 auto;padding:64px 22px 80px}
-.brand{font-weight:800;font-size:17px;letter-spacing:-.02em}.brand b{color:var(--acc)}
-h1{font-size:30px;line-height:1.3;letter-spacing:-.03em;margin:26px 0 10px}
-.lead{color:var(--sub);font-size:14.5px;line-height:1.75;max-width:660px;margin:0}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:34px}
-@media(min-width:1100px){.grid{grid-template-columns:repeat(2,1fr)}}
-@media(min-width:1420px){.grid{grid-template-columns:repeat(4,1fr)}}
-@media(min-width:1720px){.grid{grid-template-columns:repeat(5,1fr)}}
-@media(max-width:760px){.grid{grid-template-columns:1fr}h1{font-size:24px}}
-.card{display:block;text-decoration:none;color:inherit;background:var(--panel);border:1px solid var(--line);
- border-radius:16px;padding:20px 20px 18px;transition:.14s;box-shadow:0 12px 40px rgba(0,0,0,.35)}
-.card:hover{transform:translateY(-3px);border-color:rgba(255,122,92,.5);box-shadow:0 18px 50px rgba(0,0,0,.5)}
-.tag{font-size:10.5px;letter-spacing:.09em;color:var(--sub);text-transform:uppercase;font-weight:700}
-.card h2{font-size:19px;margin:9px 0 4px;letter-spacing:-.02em}
-.card .sub{font-size:12.5px;color:var(--sub);margin-bottom:13px}
-.kv{display:flex;justify-content:space-between;font-size:12.5px;padding:5px 0;border-top:1px solid var(--line)}
-.kv b{color:#ffce8a;font-weight:700}
-.go{margin-top:14px;display:inline-block;font-size:12.5px;font-weight:700;color:#1a0f0a;background:var(--acc);
- border-radius:8px;padding:8px 14px}
-.feat{margin-top:30px;background:rgba(120,160,220,.07);border:1px solid rgba(120,160,220,.22);border-radius:14px;padding:16px 18px}
-.feat h3{margin:0 0 8px;font-size:12px;letter-spacing:.07em;color:var(--sub);text-transform:uppercase}
-.feat p{margin:0;font-size:13px;line-height:1.8;color:#cfe0ee}.feat b{color:#ffce8a}
-.foot{margin-top:26px;font-size:11.5px;color:var(--sub);line-height:1.8}
+:root{--bg:#0b0e13;--panel:rgba(17,21,29,.92);--line:rgba(255,255,255,.09);
+ --ink:#eef2f7;--sub:#9fb0c4;--dim:#7d8ea3;--acc:#ff7a5c;--gold:#ffce8a}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:
+ radial-gradient(1300px 780px at 50% -14%,rgba(255,122,92,.13),transparent 62%),
+ radial-gradient(1000px 660px at 88% 108%,rgba(120,160,220,.11),transparent 62%),var(--bg);
+ color:var(--ink);font-family:'Pretendard','Malgun Gothic',system-ui,sans-serif;
+ -webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto;padding:82px 26px 96px}
 
-.qgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;margin-top:30px}
-@media(max-width:1100px){.qgrid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:700px){.qgrid{grid-template-columns:1fr}}
-.q{display:block;text-decoration:none;color:inherit;background:var(--panel);border:1px solid var(--line);
- border-radius:14px;padding:17px 18px 15px;transition:.14s;position:relative}
-.q:hover{transform:translateY(-2px);border-color:rgba(255,122,92,.55)}
-.q h3{margin:0 0 6px;font-size:16.5px;letter-spacing:-.02em}
-.q p{margin:0;font-size:12px;color:var(--sub);line-height:1.65}
-.q .where{margin-top:11px;font-size:11px;color:#ffce8a;font-weight:700}
-.q.soon{opacity:.5;pointer-events:none}
-.q.soon .where{color:var(--sub)}
-.q .badge{position:absolute;top:14px;right:14px;font-size:10px;font-weight:700;letter-spacing:.04em;
- background:rgba(255,255,255,.09);color:var(--sub);padding:3px 8px;border-radius:999px}
-.sechd{margin-top:44px;font-size:12px;letter-spacing:.08em;color:var(--sub);text-transform:uppercase;font-weight:700}
-.sechd span{text-transform:none;letter-spacing:0;font-weight:400;margin-left:8px}
+/* ── 맨 위 (가운데) ─────────────────────────────── */
+.hero{text-align:center;max-width:820px;margin:0 auto}
+.brand{font-weight:800;font-size:15px;letter-spacing:.02em;color:var(--sub)}
+.brand b{color:var(--acc)}
+h1{font-size:46px;line-height:1.22;letter-spacing:-.035em;margin:22px 0 0;font-weight:800}
+.lead{color:var(--sub);font-size:18px;line-height:1.8;margin:20px auto 0;max-width:700px}
+.legend{margin:30px auto 0;display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
+.legend span{font-size:14px;font-weight:700;padding:7px 16px;border-radius:999px;
+ border:1px solid var(--line);background:rgba(255,255,255,.035)}
+.legend .l-g{color:#8fe3ba;border-color:rgba(120,220,170,.34)}
+.legend .l-r{color:#ffa88f;border-color:rgba(255,122,92,.36)}
+.legend .l-t{color:#9ecbf5;border-color:rgba(120,170,235,.34)}
+.rule{width:52px;height:3px;border-radius:2px;background:var(--acc);margin:44px auto 0;opacity:.85}
 
-/* GIS 탭 — 지역판과 다른 성격이라 따로 크게 둔다 */
-.gis{display:flex;gap:22px;align-items:center;text-decoration:none;color:inherit;margin-top:30px;
- background:linear-gradient(120deg,rgba(255,122,92,.13),rgba(120,160,220,.10));
- border:1px solid rgba(255,122,92,.34);border-radius:18px;padding:22px 24px;transition:.14s}
-.gis:hover{transform:translateY(-3px);border-color:rgba(255,122,92,.7);box-shadow:0 18px 50px rgba(0,0,0,.5)}
+/* ── 구획 머리 (가운데) ──────────────────────────── */
+.sec{margin-top:76px}
+.sechd{text-align:center;margin-bottom:26px}
+.sechd .eyebrow{display:inline-block;font-size:13px;font-weight:800;letter-spacing:.14em;
+ padding:5px 14px;border-radius:999px}
+.k-g{background:rgba(120,220,170,.15);color:#8fe3ba}
+.k-r{background:rgba(255,122,92,.17);color:#ffa88f}
+.k-t{background:rgba(120,170,235,.17);color:#9ecbf5}
+.k-n{background:rgba(255,255,255,.08);color:var(--sub)}
+.sechd h2{font-size:29px;letter-spacing:-.03em;margin:14px 0 0;font-weight:800}
+.sechd p{margin:10px 0 0;font-size:15.5px;color:var(--sub)}
+
+/* ── 대상지·주제도 카드 (가로) ───────────────────── */
+.grid{display:flex;flex-wrap:wrap;justify-content:center;gap:16px}
+.card{flex:1 1 0;min-width:206px;max-width:300px;display:block;text-decoration:none;color:inherit;
+ background:var(--panel);border:1px solid var(--line);border-radius:18px;
+ padding:26px 22px;text-align:center;transition:.16s;box-shadow:0 14px 44px rgba(0,0,0,.34)}
+.card:hover{transform:translateY(-4px);border-color:rgba(255,122,92,.5);box-shadow:0 22px 58px rgba(0,0,0,.5)}
+.card .place{font-size:13px;font-weight:700;letter-spacing:.02em;color:var(--dim)}
+.card h3{font-size:20px;letter-spacing:-.025em;margin:11px 0 9px;font-weight:800;line-height:1.35}
+.card .sub{font-size:14px;color:var(--sub);line-height:1.6;margin:0}
+.card .open{display:inline-block;margin-top:16px;font-size:13.5px;font-weight:800;color:var(--acc);opacity:.9}
+@media(max-width:900px){.card{flex:1 1 44%;max-width:none}}
+@media(max-width:560px){.card{flex:1 1 100%}}
+
+/* ── 도구 (GIS) 큰 카드 ─────────────────────────── */
+.gis{display:flex;gap:34px;align-items:center;text-decoration:none;color:inherit;
+ background:linear-gradient(120deg,rgba(255,122,92,.14),rgba(120,160,220,.10));
+ border:1px solid rgba(255,122,92,.32);border-radius:22px;padding:34px 36px;transition:.16s}
+.gis:hover{transform:translateY(-4px);border-color:rgba(255,122,92,.68);box-shadow:0 22px 58px rgba(0,0,0,.5)}
 .gis .l{flex:1;min-width:0}
-.gis .tag{font-size:10.5px;letter-spacing:.09em;color:var(--acc);text-transform:uppercase;font-weight:800}
-.gis h2{font-size:21px;margin:8px 0 7px;letter-spacing:-.02em}
-.gis p{margin:0;font-size:13px;line-height:1.75;color:#cfe0ee}.gis p b{color:#ffce8a}
-.gis .chips{margin-top:12px;display:flex;flex-wrap:wrap;gap:6px}
-.gis .chips span{font-size:11px;color:var(--sub);background:rgba(255,255,255,.07);
- border:1px solid var(--line);border-radius:999px;padding:3px 10px}
-.gis .r{flex:none;text-align:right}
-.gis .r .n{font-size:30px;font-weight:800;letter-spacing:-.03em;color:#ffce8a;font-variant-numeric:tabular-nums}
-.gis .r .u{font-size:11.5px;color:var(--sub);margin-top:2px}
-.gis .r .go{margin-top:14px;display:inline-block;font-size:12.5px;font-weight:700;color:#1a0f0a;
- background:var(--acc);border-radius:8px;padding:8px 16px}
-@media(max-width:760px){.gis{flex-direction:column;align-items:flex-start;gap:14px}.gis .r{text-align:left}}
-</style></head>
-<style>
-/* 2026-08-18 — 지역 / 주제도 / 도구 세 묶음 정리 */
-.sec{margin-top:40px}
-.sechd2{display:flex;align-items:baseline;gap:10px;border-bottom:1px solid var(--line);padding-bottom:9px}
-.sechd2 b{font-size:17px;letter-spacing:-.02em}
-.sechd2 span{font-size:12px;color:var(--sub)}
-.sechd2 .cnt{margin-left:auto;font-size:11.5px;color:var(--sub)}
-.kind{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.08em;padding:2px 7px;border-radius:999px;vertical-align:2px}
-.k-r{background:rgba(255,122,92,.16);color:#ff9b80}
-.k-t{background:rgba(120,170,235,.16);color:#8fc0f0}
-.k-g{background:rgba(120,220,170,.14);color:#7fd8ab}
-.qlist{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:14px}
-@media(max-width:760px){.qlist{grid-template-columns:1fr}}
-.qlist a{display:flex;gap:10px;align-items:baseline;text-decoration:none;color:inherit;
-  background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:11px;padding:11px 13px;transition:.13s}
-.qlist a:hover{border-color:rgba(255,122,92,.45);background:rgba(255,255,255,.05)}
-.qlist b{font-size:14px;letter-spacing:-.02em;white-space:nowrap}
-.qlist span{font-size:12px;color:var(--sub);line-height:1.5}
-.soonlist{margin-top:12px;font-size:12.5px;color:var(--sub);line-height:1.9}
-.soonlist i{font-style:normal;color:#6f7c8c;font-size:11px;border:1px solid var(--line);border-radius:999px;padding:1px 7px;margin-right:7px}
-details.info{margin-top:40px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.02)}
-details.info summary{cursor:pointer;padding:14px 18px;font-size:13.5px;font-weight:700;letter-spacing:-.02em}
-details.info .body{padding:0 18px 18px;font-size:12px;color:var(--sub);line-height:1.8}
-/* 카드 안 표 — 라벨이 두 줄로 쪼개지지 않게 */
-.card .kv{gap:12px;align-items:baseline}
-.card .kv span:first-child{white-space:nowrap;color:var(--sub);flex:0 0 auto;font-size:11.5px}
-.card .kv b{text-align:right;line-height:1.45}
+.gis h3{font-size:25px;margin:0 0 12px;letter-spacing:-.028em;font-weight:800}
+.gis p{margin:0;font-size:15.5px;line-height:1.85;color:#d5e3f0}
+.gis p b{color:var(--gold)}
+.gis .chips{margin-top:18px;display:flex;flex-wrap:wrap;gap:8px}
+.gis .chips span{font-size:13px;color:var(--sub);background:rgba(255,255,255,.06);
+ border:1px solid var(--line);border-radius:999px;padding:5px 13px}
+.gis .r{flex:none;text-align:center;padding-left:34px;border-left:1px solid var(--line)}
+.gis .r .n{font-size:42px;font-weight:800;letter-spacing:-.035em;color:var(--gold);
+ font-variant-numeric:tabular-nums;line-height:1}
+.gis .r .u{font-size:13.5px;color:var(--sub);margin-top:9px}
+.gis .r .open{margin-top:20px;display:inline-block;font-size:14.5px;font-weight:800;color:#1a0f0a;
+ background:var(--acc);border-radius:11px;padding:11px 22px}
+@media(max-width:820px){.gis{flex-direction:column;gap:24px;padding:28px 24px}
+ .gis .r{padding-left:0;border-left:0;border-top:1px solid var(--line);padding-top:22px;width:100%}}
 
-/* 2026-08-18 (2차) — 첫화면은 「제목만 · 가로로」 ─────────────────
-   상세 수치는 열어 보면 다 있다. 첫화면에서 되풀이할 이유가 없다.
-   .grid 를 가로 한 줄로 바꾸고 카드 높이를 낮춘다. */
-.grid{display:flex !important;flex-wrap:wrap;gap:12px;margin-top:16px}
-.grid .card{flex:1 1 0;min-width:180px;max-width:420px;padding:15px 16px 14px !important;border-radius:14px}
-.grid .card h2{font-size:16.5px;margin:7px 0 3px}
-.grid .card .sub{font-size:11.5px;margin-bottom:0;line-height:1.5;
-  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.grid .card .tag{font-size:10px}
-.grid .card .go{display:none}
-@media(max-width:900px){.grid .card{flex:1 1 44%}}
-@media(max-width:560px){.grid .card{flex:1 1 100%}}
-</style>
-<body>
-<div class="wrap">
+/* ── 질문으로 찾기 ──────────────────────────────── */
+.qlist{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;max-width:940px;margin:0 auto}
+@media(max-width:780px){.qlist{grid-template-columns:1fr}}
+.qlist a{display:block;text-decoration:none;color:inherit;background:rgba(255,255,255,.03);
+ border:1px solid var(--line);border-radius:15px;padding:20px 22px;transition:.14s}
+.qlist a:hover{border-color:rgba(255,122,92,.5);background:rgba(255,255,255,.055);transform:translateY(-2px)}
+.qlist b{display:block;font-size:17px;letter-spacing:-.02em;margin-bottom:7px}
+.qlist span{font-size:14px;color:var(--sub);line-height:1.65}
+.qlist i{font-style:normal;color:var(--gold);font-weight:700}
+
+/* ── 준비 중 ────────────────────────────────────── */
+.soon{margin:24px auto 0;max-width:940px;display:flex;flex-wrap:wrap;justify-content:center;gap:10px}
+.soon div{font-size:13.5px;color:var(--dim);border:1px dashed var(--line);border-radius:12px;padding:11px 16px}
+.soon b{color:var(--sub);font-weight:700}
+
+/* ── 접어 둔 상세 ───────────────────────────────── */
+details.info{margin:76px auto 0;max-width:940px;border:1px solid var(--line);border-radius:16px;
+ background:rgba(255,255,255,.022)}
+details.info summary{cursor:pointer;padding:19px 24px;font-size:15.5px;font-weight:700;
+ letter-spacing:-.02em;text-align:center;list-style:none}
+details.info summary::-webkit-details-marker{display:none}
+details.info summary:after{content:' ▾';color:var(--sub)}
+details.info[open] summary:after{content:' ▴'}
+details.info .body{padding:0 26px 24px;font-size:14px;color:var(--sub);line-height:1.85}
+.feat{margin-top:18px;background:rgba(120,160,220,.06);border:1px solid rgba(120,160,220,.2);
+ border-radius:14px;padding:18px 20px}
+.feat h3{margin:0 0 9px;font-size:13.5px;letter-spacing:.07em;color:var(--sub);text-transform:uppercase}
+.feat p{margin:0;font-size:14.5px;line-height:1.85;color:#cfe0ee}.feat b{color:var(--gold)}
+.foot{margin-top:22px;font-size:13.5px;color:var(--sub);line-height:1.9}
+@media(max-width:760px){h1{font-size:32px}.lead{font-size:16px}.sechd h2{font-size:23px}.wrap{padding:56px 18px 72px}}
+</style></head>
+<body><div class="wrap">
+<div class="hero">
 <div class="brand">Hay<b>Day</b> · 환경분석맵</div>
-<h1>환경분석맵 — 지도 기반 도시환경 분석 엔진</h1>
-<p class="lead">건물 3D 형상에 층수·준공연도·용도지역·인구·점포를 결합해 도시환경을 진단합니다.<br><b style="color:#eef2f7">아래는 세 묶음입니다 — 내 파일을 올려 쓰는 <span style="color:#7fd8ab">도구</span>, 과업이 붙은 <span style="color:#ff9b80">대상지</span>, 넓은 지역의 한 <span style="color:#8fc0f0">주제도</span>.</b></p>
-<div class="sec"><div class="sechd2"><b><span class="kind k-g">도구</span> &nbsp;내 파일을 올려서 분석</b><span>· 땅이 정해져 있지 않습니다</span><span class="cnt">1개</span></div></div>
-<a class="gis" href="./gis.html" style="margin-top:16px"><div class="l"><div class="tag">Tool</div><h2>GIS — 내 파일을 올려서 바로 분석</h2><p>가지고 계신 <b>SHP·ZIP·GeoJSON</b>을 지도에 올리면 좌표계와 한글 깨짐을 자동으로 잡아 주고, 링 방향·자기교차·용도지역 코드 불일치까지 <b>13가지를 검사</b>합니다. 부산 전역 <b>건물 472,608동</b>이 이미 들어 있어, 지도에 원이나 다각형을 그리면 그 자리에서 <b>도시재생 쇠퇴 3요건</b>을 판정합니다.</p><div class="chips"><span>좌표계 자동판별</span><span>CP949 한글 복원</span><span>품질검사 13종</span><span>쇠퇴 3요건 판정</span><span>설치 없음</span></div></div><div class="r"><div class="n">472,608</div><div class="u">동 · 부산 전역 내장</div><div class="go">열기 →</div></div></a>
-<div class="sec"><div class="sechd2"><b><span class="kind k-r">대상지</span> &nbsp;과업이 붙은 그 땅</b><span>· 자료가 이미 들어 있습니다</span><span class="cnt">5곳</span></div></div>
-<div class="grid" style="margin-top:16px"><a class="card" href="./gimhae-wondosim.html"><div class="tag"><span class="kind k-r">대상지</span> &nbsp;경남 김해시</div><h2>김해 원도심</h2><div class="sub">초광역권 도시재생 · 동상·부원·회현·북부동</div></a><a class="card" href="./seogu.html"><div class="tag"><span class="kind k-r">대상지</span> &nbsp;부산 서구</div><h2>부산 서구 전역</h2><div class="sub">메인 사업지 · 남부민동 611 일원</div></a><a class="card" href="./saha.html"><div class="tag"><span class="kind k-r">대상지</span> &nbsp;부산 사하구</div><h2>사하 신평·장림·다대동</h2><div class="sub">신평장림산단 · FutureVibe-01 마스터플랜</div></a><a class="card" href="./pohang.html"><div class="tag"><span class="kind k-r">대상지</span> &nbsp;포항 북구 중앙동</div><h2>포항 원도심 3권역</h2><div class="sub">초광역권 원도심 집중 활성화사업 · 공구거리·실개천·야시장</div></a><a class="card" href="./gijang.html"><div class="tag"><span class="kind k-r">대상지</span> &nbsp;부산 기장군</div><h2>기장 만화천</h2><div class="sub">원도심 통합재생 대상지</div></a></div>
-<div class="sec"><div class="sechd2"><b><span class="kind k-t">주제도</span> &nbsp;넓은 지역의 한 주제</b><span>· 대상지가 아닙니다</span><span class="cnt">1개</span></div></div>
-<div class="grid" style="margin-top:16px"><a class="card" href="./busan-traffic.html"><div class="tag"><span class="kind k-t">주제도</span> &nbsp;부산 전역</div><h2>부산 도로교통망</h2><div class="sub">퇴근 피크 통행속도 · 속도비 · 도로위계</div></a></div>
-<div class="sec"><div class="sechd2"><b>질문으로 찾기</b><span>· 어디를 열지 모를 때</span></div></div>
-<div class="qlist"><a href="./gimhae-wondosim.html"><b>상권이 어디로 옮겨갔나</b><span>동네별 점포 수와 빈 점포<br>김해 원도심 →</span></a><a href="./seogu.html"><b>어디부터 정비할까</b><span>낡은 건물·빈집이 몰린 곳<br>부산 서구 · 포항 →</span></a><a href="./gimhae-wondosim.html"><b>가게가 줄고 있나</b><span>사업체수 9개년 · 도시재생 3대 지표<br>김해 원도심 →</span></a><a href="./seogu.html"><b>빈집이 어디 몰려 있나</b><span>반경을 그리면 3요건 즉시 판정<br>부산 서구 →</span></a><a href="./saha.html"><b>공장이 어디에 몰려 있나</b><span>등록공장 1,161개 위치·업종 밀도<br>사하 →</span></a><a href="./busan-traffic.html"><b>길이 어디서 막히나</b><span>제한속도 대비 속도비로 비교<br>부산 전역 →</span></a></div>
-<div class="soonlist"><i>준비 중</i> 밤에 어두운 곳은 (현장 조도 → 조명 개선 미리보기) &nbsp;·&nbsp; <i>준비 중</i> 이 거리는 어떻게 생겼나 (연속 사진 → 건물 입면도) &nbsp;·&nbsp; <i>준비 중</i> 사람이 어디로 다니나 (버스 승하차 × 상권 매출)</div>
-<details class="info"><summary>엔진 공통 기능 · 데이터 출처 · 한계 (펼쳐 보기)</summary><div class="body"><div class="feat"><h3>엔진 공통 기능</h3>
+<h1>지도 위에서<br>도시를 진단합니다</h1>
+<p class="lead">건물 3D 형상에 층수·준공연도·용도지역·인구·점포를 결합해 어디가 낡았고 어디가 비었는지, 상권이 어디로 옮겨갔는지를 한 화면에서 봅니다.</p>
+<div class="legend"><span class="l-g">도구 1</span><span class="l-r">대상지 5곳</span><span class="l-t">주제도 1</span></div>
+<div class="rule"></div></div>
+<div class="sec">
+<div class="sechd"><span class="eyebrow k-g">도구</span><h2>내 파일을 올려서 분석</h2><p>땅이 정해져 있지 않습니다 — 가지고 계신 자료를 올려 씁니다</p></div>
+<a class="gis" href="./gis.html"><div class="l"><h3>GIS — 내 파일을 올려서 바로 분석</h3><p>가지고 계신 <b>SHP·ZIP·GeoJSON</b>을 지도에 올리면 좌표계와 한글 깨짐을 자동으로 잡아 주고, 링 방향·자기교차·용도지역 코드 불일치까지 <b>13가지를 검사</b>합니다. 부산 전역 <b>건물 472,608동</b>이 이미 들어 있어, 지도에 원이나 다각형을 그리면 그 자리에서 <b>도시재생 쇠퇴 3요건</b>을 판정합니다.</p><div class="chips"><span>좌표계 자동판별</span><span>CP949 한글 복원</span><span>품질검사 13종</span><span>쇠퇴 3요건 판정</span><span>설치 없음</span></div></div><div class="r"><div class="n">472,608</div><div class="u">동 · 부산 전역 내장</div><span class="open">열기 →</span></div></a>
+</div>
+<div class="sec">
+<div class="sechd"><span class="eyebrow k-r">대상지</span><h2>과업이 붙은 그 땅</h2><p>자료가 이미 들어 있습니다 — 열면 바로 봅니다</p></div>
+<div class="grid"><a class="card" href="./gimhae-wondosim.html"><div class="place">경남 김해시</div><h3>김해 원도심</h3><p class="sub">초광역권 도시재생 · 동상·부원·회현·북부동</p><span class="open">열기 →</span></a><a class="card" href="./seogu.html"><div class="place">부산 서구</div><h3>부산 서구 전역</h3><p class="sub">메인 사업지 · 남부민동 611 일원</p><span class="open">열기 →</span></a><a class="card" href="./saha.html"><div class="place">부산 사하구</div><h3>사하 신평·장림·다대동</h3><p class="sub">신평장림산단 · FutureVibe-01 마스터플랜</p><span class="open">열기 →</span></a><a class="card" href="./pohang.html"><div class="place">포항 북구 중앙동</div><h3>포항 원도심 3권역</h3><p class="sub">공구거리 · 실개천 · 야시장</p><span class="open">열기 →</span></a><a class="card" href="./gijang.html"><div class="place">부산 기장군</div><h3>기장 만화천</h3><p class="sub">원도심 통합재생 대상지</p><span class="open">열기 →</span></a></div>
+</div>
+<div class="sec">
+<div class="sechd"><span class="eyebrow k-t">주제도</span><h2>넓은 지역의 한 주제</h2><p>사업지가 아니라 한 가지 주제를 넓게 봅니다</p></div>
+<div class="grid"><a class="card" href="./busan-traffic.html"><div class="place">부산 전역</div><h3>부산 도로교통망</h3><p class="sub">퇴근 피크 통행속도 · 속도비 · 도로위계</p><span class="open">열기 →</span></a></div>
+</div>
+<div class="sec">
+<div class="sechd"><span class="eyebrow k-n">길잡이</span><h2>질문으로 찾기</h2><p>어디를 열지 모를 때</p></div>
+<div class="qlist"><a href="./gimhae-wondosim.html"><b>상권이 어디로 옮겨갔나</b><span>동네별 점포 수와 빈 점포<br><i>김해 원도심 →</i></span></a><a href="./seogu.html"><b>어디부터 정비할까</b><span>낡은 건물·빈집이 몰린 곳<br><i>부산 서구 · 포항 →</i></span></a><a href="./gimhae-wondosim.html"><b>가게가 줄고 있나</b><span>사업체수 9개년 · 도시재생 3대 지표<br><i>김해 원도심 →</i></span></a><a href="./seogu.html"><b>빈집이 어디 몰려 있나</b><span>반경을 그리면 3요건 즉시 판정<br><i>부산 서구 →</i></span></a><a href="./saha.html"><b>공장이 어디에 몰려 있나</b><span>등록공장 1,161개 위치·업종 밀도<br><i>사하 →</i></span></a><a href="./busan-traffic.html"><b>길이 어디서 막히나</b><span>제한속도 대비 속도비로 비교<br><i>부산 전역 →</i></span></a></div>
+<div class="soon"><div><b>밤에 어두운 곳은</b> — 현장 조도 → 조명 개선 미리보기</div><div><b>이 거리는 어떻게 생겼나</b> — 연속 사진 → 건물 입면도</div><div><b>사람이 어디로 다니나</b> — 버스 승하차 × 상권 매출</div></div>
+</div>
+<details class="info"><summary>엔진 공통 기능 · 데이터 출처 · 한계</summary><div class="body"><div class="feat"><h3>엔진 공통 기능</h3>
   <p>건물 단위 3D 압출과 클릭 상세, 층수·용도지역·노후도 3종 현황분석 전환, 노후 밴드별 개별 필터,
   층수 필터와 사업구역 내 건물만 보기. 서구판에는 <b>빈집밀집구역 3요건 자동판정기</b>와
   지도를 클릭해 반경을 그리면 구역 요건을 실시간 집계하는 <b>구역 시뮬레이터</b>,
