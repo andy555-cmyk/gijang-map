@@ -5,6 +5,7 @@
 :root{--bg:#0b0e13;--panel:rgba(17,21,29,.92);--line:rgba(255,255,255,.09);
  --ink:#eef2f7;--sub:#9fb0c4;--dim:#7d8ea3;--acc:#ff7a5c;--gold:#ffce8a}
 *{box-sizing:border-box}
+body,.card,.qlist,.tool,.soon,.hd{word-break:keep-all}
 html,body{margin:0;min-height:100%;background:
  radial-gradient(1300px 760px at 50% -14%,rgba(255,122,92,.13),transparent 62%),
  radial-gradient(1000px 640px at 92% 100%,rgba(120,160,220,.11),transparent 62%),var(--bg);
@@ -17,7 +18,7 @@ html,body{margin:0;min-height:100%;background:
 .brand{font-weight:800;font-size:15px;letter-spacing:.02em;color:var(--sub)}
 .brand b{color:var(--acc)}
 h1{font-size:44px;line-height:1.22;letter-spacing:-.035em;margin:20px 0 0;font-weight:800}
-.lead{color:var(--sub);font-size:17.5px;line-height:1.75;margin:18px auto 0;max-width:700px}
+.lead{color:var(--sub);font-size:17.5px;line-height:1.8;margin:18px auto 0;max-width:760px;word-break:keep-all}
 .legend{margin:52px auto 0;display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
 .legend span{font-size:14px;font-weight:700;padding:7px 16px;border-radius:999px;
  border:1px solid var(--line);background:rgba(255,255,255,.035)}
@@ -117,7 +118,7 @@ details.info .body{display:block;padding:0 26px 24px;font-size:14px;color:var(--
 <div class="hero">
 <div class="brand">Hay<b>Day</b> · 환경분석맵</div>
 <h1>지도 기반 도시환경 분석</h1>
-<p class="lead">건물 3D 형상에 층수·준공연도·용도지역·인구·점포 자료를 겹쳐 봅니다. 노후 건물과 빈집이 몰린 곳, 상권이 옮겨간 방향을 한 화면에서 확인합니다.</p>
+<p class="lead">건물 3D 형상에 층수·준공연도·용도지역·인구·점포 자료를 겹쳐 봅니다.<br>노후 건물과 빈집이 몰린 곳, 상권이 옮겨간 방향을 한 화면에서 확인합니다.</p>
 </div>
 <div class="main">
 <div class="rail">
