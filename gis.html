@@ -316,7 +316,8 @@ html[data-theme="dark"] .maplibregl-ctrl-scale{background:rgba(21,26,32,.7);colo
         </div>
         <p class="hint">지도를 누르면 그 지점 반경 안을 집계합니다 <span style="opacity:.8">— 누른 자리에 원이 그려집니다.</span> 반경을 끌면 즉시 재집계합니다.</p>
       </div>
-      <p class="hint" id="polyhint" style="display:none">지도를 눌러 구역계 꼭짓점을 찍습니다. 마지막 점을 두 번 누르면 구역이 닫힙니다.</p>
+      <p class="hint" id="polyhint" style="display:none">지도를 눌러 꼭짓점을 찍습니다. 점 3개부터 <b>1번 점</b>이 커지며 「여기서 닫기」가 뜹니다 — 누르면 구역이 체결됩니다.
+        닫은 뒤에는 <b>흰 점을 끌면 돋보기</b>로 확대돼 미세조정할 수 있습니다.</p>
     </div>
 
     <div class="sec">
@@ -329,6 +330,7 @@ html[data-theme="dark"] .maplibregl-ctrl-scale{background:rgba(21,26,32,.7);colo
       <div class="row">
         <button class="btn g bs on" data-bs="light">일반</button>
         <button class="btn g bs" data-bs="dark">야간</button>
+        <button class="btn g bs" data-bs="sat">위성</button>
         <button class="btn g bs" data-bs="none">없음</button>
       </div>
       <p class="hint" style="margin:8px 0 0">CARTO 무료 타일 · 키 없이 씁니다</p>
@@ -1220,7 +1222,10 @@ const $ = s => document.querySelector(s);
 const CARTO = {
   light:'https://basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}{r}.png',
   dark :'https://basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png',
+  /* 위성 — 기장·서구·사하 지도와 같은 Esri 항공영상을 쓴다 (2026-08-19 추가) */
+  sat  :'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
 };
+window.__isSat = () => (document.querySelector('.bs.on')||{}).dataset?.bs === 'sat';
 const PAL = ['#c8542a','#2f6f9e','#3f8a5a','#8a5aa8','#b0862a','#4a4f57','#a8425a','#2f8a8a'];
 let map, layers = [], seq = 0, activeId = null;
 
@@ -1230,8 +1235,10 @@ function baseStyle(kind) {
     {id:'bgcolor', type:'background', paint:{'background-color': kind==='dark' ? '#12161a' : '#f2f3f1'}}
   ]};
   if (kind !== 'none') {
+    const isSat = kind === 'sat';
     s.sources.base = {type:'raster', tiles:[CARTO[kind].replace('{r}','')], tileSize:256,
-      attribution:'© OpenStreetMap © CARTO'};
+      maxzoom: isSat ? 19 : 20,
+      attribution: isSat ? 'Imagery © Esri' : '© OpenStreetMap © CARTO'};
     s.layers.push({id:'base', type:'raster', source:'base'});
   }
   return s;
@@ -1250,6 +1257,15 @@ map = new maplibregl.Map({container:'map', style:baseStyle(THEME === 'dark' ? 'd
 map.addControl(new maplibregl.NavigationControl({showCompass:false}), 'top-right');
 map.addControl(new maplibregl.ScaleControl({maxWidth:110, unit:'metric'}), 'bottom-left');
 
+/* 위성 배경에서는 용도지역·건물 색을 옅게 깔아 항공사진이 비쳐 보이게 한다 (2026-08-19) */
+window.__satTune = function () {
+  const sat = window.__isSat();
+  const set = (id, prop, v) => { if (map.getLayer(id)) map.setPaintProperty(id, prop, v); };
+  set('base_uq_f',  'fill-opacity',   sat ? 0.14 : 0.42);
+  set('base_bld_f', 'fill-opacity',   ['case',['boolean',['feature-state','hit'],false],0.95, sat ? 0.5 : 0.72]);
+  set('base_bld_c', 'circle-opacity', sat ? 0.62 : 0.75);
+  set('base_zone_l','line-color',     sat ? '#ffffff' : '#1a1d21');
+};
 function setBase(kind) {
   document.querySelectorAll('.bs').forEach(x => x.classList.toggle('on', x.dataset.bs === kind));
   map.setStyle(baseStyle(kind));
@@ -1257,6 +1273,7 @@ function setBase(kind) {
     layers.forEach(addToMap);
     if (window.__reAddBase) window.__reAddBase();
     if (window.anaPaint) try { window.anaPaint(); } catch(e){}
+    if (window.__satTune) try { window.__satTune(); } catch(e){}
   });
 }
 document.querySelectorAll('.bs').forEach(b => b.onclick = () => { window.__bsPicked = true; setBase(b.dataset.bs); });
@@ -1795,7 +1812,8 @@ $('#modal').onclick = e => { if (e.target.id === 'modal') $('#modal').classList.
 <script>/* ═══════════════════════════════════════════════════════════
    기본 자료(부산 전역·김해 원도심) + 「여기 안에 무엇이 있나」
    ═══════════════════════════════════════════════════════════ */
-let BASE = null, ana = {mode:'circle', center:null, radius:300, poly:[], drawing:false, target:'base'};
+let BASE = null, ana = {mode:'circle', center:null, radius:300, poly:[], drawing:false, target:'base',
+                        closed:false, snap:false, edit:false};
 
 /* 올린 파일에서 쓸 만한 칸을 알아서 찾는다 */
 function profile(feats, names) {
@@ -1970,7 +1988,16 @@ function loadBaseNow(R) {
   if (!window.__anaBound) {
     window.__anaBound = true;
     map.on('click', onMapClick);
-    map.on('dblclick', e => { if (ana.mode === 'poly' && ana.poly.length >= 3) { e.preventDefault(); closePoly(); } });
+    map.on('dblclick', e => {
+      if (ana.mode !== 'poly') return;
+      if (ana.closed) {                       // 체결 뒤 — 꼭짓점을 두 번 누르면 지운다 (최소 3개는 남긴다)
+        if (ana.poly.length <= 3) return;
+        const h = window.__anaHit && window.__anaHit(e.lngLat, 13);
+        if (h && h.k === 'v') { e.preventDefault(); ana.poly.splice(h.i, 1); drawPoly(true); run(); }
+        return;
+      }
+      if (ana.poly.length >= 3) { e.preventDefault(); closePoly(); }
+    });
   }
   map.jumpTo({center:BASE.center, zoom: R.k === 'busan' ? 12.2 : 14.2});
   const ms = Math.round(performance.now() - t0);
@@ -2042,24 +2069,41 @@ function addBaseLayers() {
 /* 그린 도형 — 밝은 화면과 어두운 화면 둘 다에서 선이 보이게 테두리를 한 겹 깐다 */
 function addAnaLayers() {
   if (map.getLayer('ana_f')) return;
+  const notRub = ['!=', ['get','k'], 'rub'];
   map.addLayer({id:'ana_f', type:'fill', source:'ana', paint:{'fill-color':'#4aa6ec','fill-opacity':0.16}});
-  map.addLayer({id:'ana_c', type:'line', source:'ana',
+  map.addLayer({id:'ana_c', type:'line', source:'ana', filter:notRub,
     paint:{'line-color':'#ffffff','line-width':5.5,'line-opacity':0.45}});
-  map.addLayer({id:'ana_l', type:'line', source:'ana',
+  map.addLayer({id:'ana_l', type:'line', source:'ana', filter:notRub,
     paint:{'line-color':'#2f8fdd','line-width':2.4}});
-  map.addLayer({id:'ana_p', type:'circle', source:'ana',
-    filter:['==',['geometry-type'],'Point'],
-    paint:{'circle-radius':4,'circle-color':'#fff','circle-stroke-color':'#2f8fdd','circle-stroke-width':2}});
+  /* 마지막 점에서 마우스까지 따라오는 점선 — 어디에 붙는지 보이게 한다 */
+  map.addLayer({id:'ana_rub', type:'line', source:'ana', filter:['==',['get','k'],'rub'],
+    paint:{'line-color':'#2f8fdd','line-width':2,'line-dasharray':[2,1.6],'line-opacity':0.9}});
+  /* 변 가운데 점 — 끌면 꼭짓점이 새로 생긴다 */
+  map.addLayer({id:'ana_mid', type:'circle', source:'ana', filter:['==',['get','k'],'m'],
+    paint:{'circle-radius':4,'circle-color':'#fff','circle-opacity':0.9,
+           'circle-stroke-color':'#2f8fdd','circle-stroke-width':1.6}});
+  /* 꼭짓점 — 1번 점에 붙으면(snap) 굵은 초록으로 커진다 */
+  map.addLayer({id:'ana_p', type:'circle', source:'ana', filter:['==',['get','k'],'v'],
+    paint:{'circle-radius':['case',['==',['get','snap'],1],11,['==',['get','first'],1],5.5,4.5],
+           'circle-color':'#fff',
+           'circle-stroke-color':['case',['==',['get','snap'],1],'#19b36b','#2f8fdd'],
+           'circle-stroke-width':['case',['==',['get','snap'],1],4,2.2]}});
   anaPaint();
 }
 /* 테마가 바뀌면 테두리 색만 갈아 낀다 */
 window.anaPaint = function anaPaint() {
   if (!map.getLayer('ana_c')) return;
-  const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+  /* 위성 배경도 어두운 배경으로 친다 — 흰 선이 묻히지 않게 */
+  const dark = document.documentElement.getAttribute('data-theme') === 'dark' || window.__isSat();
+  const line = dark ? '#6cc0ff' : '#2f8fdd';
   map.setPaintProperty('ana_c', 'line-color', dark ? '#0d1116' : '#ffffff');
   map.setPaintProperty('ana_c', 'line-opacity', dark ? 0.7 : 0.5);
-  map.setPaintProperty('ana_l', 'line-color', dark ? '#6cc0ff' : '#2f8fdd');
-  map.setPaintProperty('ana_p', 'circle-stroke-color', dark ? '#6cc0ff' : '#2f8fdd');
+  map.setPaintProperty('ana_l', 'line-color', line);
+  if (map.getLayer('ana_rub')) map.setPaintProperty('ana_rub', 'line-color', line);
+  if (map.getLayer('ana_mid')) map.setPaintProperty('ana_mid', 'circle-stroke-color', line);
+  /* 꼭짓점은 색을 통째로 갈지 않는다 — 체결 표시(초록)를 살려야 한다 */
+  map.setPaintProperty('ana_p', 'circle-stroke-color',
+    ['case',['==',['get','snap'],1],'#19b36b', line]);
   map.setPaintProperty('ana_p', 'circle-color', dark ? '#0d1116' : '#ffffff');
   map.setPaintProperty('ana_f', 'fill-opacity', dark ? 0.20 : 0.16);
 };
@@ -2068,7 +2112,11 @@ window.anaPaint = function anaPaint() {
 function onMapClick(e) {
   if (!BASE) return;
   if (ana.mode === 'circle') { ana.center = [e.lngLat.lng, e.lngLat.lat]; drawCircle(); run(); }
-  else { ana.poly.push([e.lngLat.lng, e.lngLat.lat]); drawPoly(false); if (ana.poly.length >= 3) run(); }
+  else {
+    if (ana.closed) return;                 // 이미 체결됐으면 점을 더 찍지 않는다
+    if (ana.snap) { closePoly(); return; }  // 1번 점을 눌렀다 → 체결
+    ana.poly.push([e.lngLat.lng, e.lngLat.lat]); drawPoly(false); if (ana.poly.length >= 3) run();
+  }
 }
 function circlePoly(c, m) {
   const pts = [], R = 6378137, d = m / R;
@@ -2081,20 +2129,42 @@ function circlePoly(c, m) {
   }
   return pts;
 }
-function setAna(fs){ map.getSource('ana').setData({type:'FeatureCollection', features:fs}); }
+function setAna(fs){
+  window.__anaFC = {type:'FeatureCollection', features:fs};
+  map.getSource('ana').setData(window.__anaFC);
+  if (window.__lupeSync) window.__lupeSync();
+}
 function drawCircle() {
   if (!ana.center) return;
   setAna([{type:'Feature',properties:{},geometry:{type:'Polygon',coordinates:[circlePoly(ana.center, ana.radius)]}}]);
 }
-function drawPoly(closed) {
-  const f = [];
-  if (ana.poly.length >= 2) f.push({type:'Feature',properties:{},
-    geometry: closed ? {type:'Polygon',coordinates:[[...ana.poly, ana.poly[0]]]}
-                     : {type:'LineString',coordinates:ana.poly}});
-  ana.poly.forEach(p => f.push({type:'Feature',properties:{},geometry:{type:'Point',coordinates:p}}));
+function drawPoly(closed, mouse) {
+  const f = [], P = ana.poly;
+  if (P.length >= 2) f.push({type:'Feature',properties:{},
+    geometry: closed ? {type:'Polygon',coordinates:[[...P, P[0]]]}
+                     : {type:'LineString',coordinates:P}});
+  /* 아직 안 닫혔으면 마지막 점 → 마우스(또는 1번 점)로 점선을 끌고 다닌다 */
+  if (!closed && P.length && mouse)
+    f.push({type:'Feature',properties:{k:'rub'},
+            geometry:{type:'LineString',coordinates:[P[P.length-1], ana.snap ? P[0] : mouse]}});
+  P.forEach((p, i) => f.push({type:'Feature',
+    properties:{k:'v', i, first: i===0?1:0, snap:(i===0 && ana.snap)?1:0},
+    geometry:{type:'Point',coordinates:p}}));
+  /* 체결된 뒤에는 변 가운데 점도 같이 그린다 — 여기를 끌면 꼭짓점이 늘어난다 */
+  if (closed && P.length > 2)
+    for (let i = 0; i < P.length; i++) {
+      const a = P[i], b = P[(i+1) % P.length];
+      f.push({type:'Feature',properties:{k:'m', after:i},
+              geometry:{type:'Point',coordinates:[(a[0]+b[0])/2, (a[1]+b[1])/2]}});
+    }
   setAna(f);
 }
-function closePoly(){ drawPoly(true); run(); }
+function closePoly(){
+  if (ana.poly.length < 3) return;
+  ana.closed = true; ana.snap = false; ana.edit = true;
+  drawPoly(true); run();
+  if (window.__anaToast) window.__anaToast();
+}
 
 /* 선분 두 개가 실제로 교차하는가 (끝점을 공유하는 이웃 변은 뺀다) */
 function segX(a, b, c, d) {
@@ -2636,7 +2706,7 @@ function renderRegions() {
     if (b.dataset.k === REGION) return;
     ['base_uq_f','base_bld_f','base_bld_c','base_bld_l','base_zone_l'].forEach(id => map.getLayer(id) && map.removeLayer(id));
     ['base_uq','base_bld','base_zone'].forEach(id => map.getSource(id) && map.removeSource(id));
-    BASE = null; ana.center = null; ana.poly = []; setAna([]);
+    BASE = null; ana.center = null; ana.poly = []; ana.closed = false; ana.snap = false; setAna([]);
     $('#ressec').style.display = 'none';
     loadBase(b.dataset.k);
   });
@@ -2663,7 +2733,7 @@ renderTargets();
 document.querySelectorAll('.md').forEach(b => b.onclick = () => {
   document.querySelectorAll('.md').forEach(x => {x.classList.remove('on'); x.classList.add('g');});
   b.classList.add('on'); b.classList.remove('g');
-  ana.mode = b.dataset.md; ana.poly = []; ana.center = null; setAna([]);
+  ana.mode = b.dataset.md; ana.poly = []; ana.center = null; ana.closed = false; ana.snap = false; setAna([]);
   $('#ressec').style.display = 'none';    // 도형을 지웠으면 옛 숫자도 같이 치운다
   $('#radwrap').style.display = ana.mode === 'circle' ? '' : 'none';
   $('#polyhint').style.display = ana.mode === 'poly' ? '' : 'none';
@@ -2674,7 +2744,8 @@ $('#rad').oninput = e => {
   $('#radv').textContent = nf(ana.radius) + ' m';
   drawCircle(); run();
 };
-$('#anaclr').onclick = () => { ana.center = null; ana.poly = []; setAna([]); $('#ressec').style.display='none'; };
+$('#anaclr').onclick = () => { ana.center = null; ana.poly = []; ana.closed = false; ana.snap = false;
+  setAna([]); $('#ressec').style.display='none'; if (window.__anaHint) window.__anaHint(); };
 /* 켜자마자 올린다. 배경 타일이 늦거나 인터넷이 없어도 기다리지 않는다. */
 let bootTries = 0;
 function boot() {
@@ -2930,6 +3001,202 @@ function declineHTML(hit, p20, areaM2) {
       사업체: 통계청 「사업체수(등록기반)」(2020~2024) · 건축물: ${esc((BASE.stat && BASE.stat.src) || '건축물대장')}</p>
   </div>`;
 }
+</script>
+
+<!-- ═══ 구역계 체결 · 돋보기 미세조정 (2026-08-19 호진님 피드백) ═══ -->
+<style>
+  #anaHint{position:absolute;left:50%;transform:translateX(-50%);top:12px;z-index:6;
+    background:rgba(20,24,30,.90);color:#fff;padding:8px 15px;border-radius:20px;font-size:12.5px;font-weight:600;
+    pointer-events:none;white-space:nowrap;box-shadow:0 4px 14px rgba(0,0,0,.22);display:none}
+  #anaHint b{color:#7fd8a8}
+  #anaToast{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.92);z-index:9;
+    background:#19b36b;color:#fff;padding:12px 22px;border-radius:11px;font-size:14.5px;font-weight:700;
+    opacity:0;pointer-events:none;transition:.2s;box-shadow:0 10px 30px rgba(25,179,107,.42);display:block}
+  #anaToast.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  #anaLupe{position:absolute;width:186px;height:186px;border-radius:50%;border:4px solid #fff;overflow:hidden;z-index:8;
+    box-shadow:0 8px 28px rgba(0,0,0,.34);display:none;pointer-events:none;background:var(--mapbg,#ddd)}
+  #anaLupeMap{width:100%;height:100%}
+  #anaLupe .cx{position:absolute;inset:0}
+  #anaLupe .cx:before,#anaLupe .cx:after{content:"";position:absolute;background:rgba(255,255,255,.9);
+    box-shadow:0 0 0 .5px rgba(0,0,0,.45)}
+  #anaLupe .cx:before{left:50%;top:0;bottom:0;width:1px;margin-left:-.5px}
+  #anaLupe .cx:after{top:50%;left:0;right:0;height:1px;margin-top:-.5px}
+  #anaLupe .dt{position:absolute;left:50%;top:50%;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;
+    background:#ff3b30;border:2.5px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.25)}
+  #anaLupeXY{position:absolute;left:50%;transform:translateX(-50%);bottom:10px;background:rgba(20,24,30,.82);color:#fff;
+    font-size:10px;padding:2px 8px;border-radius:10px;white-space:nowrap;font-variant-numeric:tabular-nums}
+</style>
+<script>
+(function(){
+  const M = document.getElementById('map');
+  if (!M || typeof map === 'undefined') return;
+  M.insertAdjacentHTML('beforeend',
+    '<div id="anaHint"></div><div id="anaToast">구역 체결 완료</div>' +
+    '<div id="anaLupe"><div id="anaLupeMap"></div><div class="cx"></div><div class="dt"></div><div id="anaLupeXY"></div></div>');
+  const hintEl = document.getElementById('anaHint'), toastEl = document.getElementById('anaToast'),
+        lupeEl = document.getElementById('anaLupe'), xyEl = document.getElementById('anaLupeXY');
+
+  /* 돋보기용 작은 지도 — 큰 지도와 같은 배경을 쓴다 */
+  let lupe = null, lupeReady = false;
+  function curKind(){ const b = document.querySelector('.bs.on'); return b ? b.dataset.bs : 'light'; }
+  function ensureLupe(){
+    if (lupe) return lupe;
+    lupe = new maplibregl.Map({container:'anaLupeMap', style:baseStyle(curKind()),
+      center:map.getCenter(), zoom:map.getZoom()+2.6, interactive:false, attributionControl:false});
+    lupe.on('style.load', () => { lupeReady = true; syncLupe(); });
+    window.__lupeRef = lupe;
+    return lupe;
+  }
+  /* 큰 지도의 구역 도형을 작은 지도에도 그대로 얹는다 */
+  window.__lupeSync = () => syncLupe();
+  /* 돋보기 안에도 건물을 깔아 준다 — 건물이 안 보이면 미세조정이 무의미하다 */
+  function lupeBld(c){
+    const out = {type:'FeatureCollection', features:[]};
+    if (!BASE || !BASE.bld || !BASE.__toF) return out;
+    const d = 0.0045;
+    for (let i = 0; i < BASE.bld.length; i++) {
+      const b = BASE.bld[i];
+      if (Math.abs(b.cx - c[0]) > d || Math.abs(b.cy - c[1]) > d) continue;
+      out.features.push(BASE.__toF(b, i));
+      if (out.features.length > 5000) break;
+    }
+    return out;
+  }
+  window.__lupeBld = c => {
+    if (!lupe || !lupe.getSource('bld')) return;
+    lupe.getSource('bld').setData(lupeBld(c));
+  };
+  function syncLupe(){
+    if (!lupe || !lupeReady) return;
+    const data = window.__anaFC || {type:'FeatureCollection',features:[]};
+    if (!lupe.getSource('bld')) {
+      lupe.addSource('bld', {type:'geojson', data:{type:'FeatureCollection',features:[]}});
+      lupe.addLayer({id:'l_b', type:'fill', source:'bld',
+        paint:{'fill-color':'#c2694a','fill-opacity':0.5}});
+      lupe.addLayer({id:'l_bl', type:'line', source:'bld',
+        paint:{'line-color':'#8d4630','line-width':0.7,'line-opacity':0.7}});
+    }
+    if (!lupe.getSource('ana')) {
+      lupe.addSource('ana', {type:'geojson', data:data});
+      lupe.addLayer({id:'l_f', type:'fill', source:'ana', paint:{'fill-color':'#4aa6ec','fill-opacity':0.18}});
+      lupe.addLayer({id:'l_c', type:'line', source:'ana', filter:['!=',['get','k'],'rub'],
+        paint:{'line-color':'#ffffff','line-width':5,'line-opacity':0.5}});
+      lupe.addLayer({id:'l_l', type:'line', source:'ana', filter:['!=',['get','k'],'rub'],
+        paint:{'line-color':'#2f8fdd','line-width':2.4}});
+      lupe.addLayer({id:'l_p', type:'circle', source:'ana', filter:['==',['get','k'],'v'],
+        paint:{'circle-radius':5,'circle-color':'#fff','circle-stroke-color':'#2f8fdd','circle-stroke-width':2}});
+    } else lupe.getSource('ana').setData(data);
+  }
+  /* 배경을 바꾸면 돋보기 배경도 따라간다 */
+  document.querySelectorAll('.bs').forEach(b => b.addEventListener('click', () => {
+    if (lupe) { lupeReady = false; lupe.setStyle(baseStyle(b.dataset.bs));
+                lupe.once('style.load', () => { lupeReady = true; syncLupe(); }); }
+    setTimeout(() => { if (window.anaPaint) try { window.anaPaint(); } catch(e){} }, 60);
+  }));
+
+  const px = (a,b) => { const A = map.project(a), B = map.project(b); return Math.hypot(A.x-B.x, A.y-B.y); };
+
+  /* 마우스 밑에 뭐가 있나 — 꼭짓점(v)인지 변 가운데 점(m)인지 */
+  window.__anaHit = function(lngLat, r){
+    const L = [lngLat.lng !== undefined ? lngLat.lng : lngLat[0], lngLat.lat !== undefined ? lngLat.lat : lngLat[1]];
+    const P = ana.poly;
+    for (let i = 0; i < P.length; i++) if (px(P[i], L) < r) return {k:'v', i};
+    if (ana.closed) for (let i = 0; i < P.length; i++) {
+      const a = P[i], b = P[(i+1) % P.length];
+      if (px([(a[0]+b[0])/2, (a[1]+b[1])/2], L) < r-3) return {k:'m', i};
+    }
+    return null;
+  };
+
+  window.__anaHint = function(msg){
+    if (ana.mode !== 'poly' || !msg) { hintEl.style.display = 'none'; return; }
+    hintEl.innerHTML = msg; hintEl.style.display = '';
+  };
+  window.__anaToast = function(){
+    toastEl.classList.add('on');
+    setTimeout(() => toastEl.classList.remove('on'), 1100);
+    if (map.getLayer('ana_f')) {                       // 잠깐 진하게 — 닫혔다는 것이 눈에 보이게
+      const dark = document.documentElement.getAttribute('data-theme') === 'dark' || window.__isSat();
+      map.setPaintProperty('ana_f','fill-opacity', 0.45);
+      setTimeout(() => { if (map.getLayer('ana_f')) map.setPaintProperty('ana_f','fill-opacity', dark ? 0.20 : 0.16); }, 330);
+    }
+    window.__anaHint('구역이 체결되었습니다 · <b>흰 점을 끌면 돋보기</b>로 미세조정 · 두 번 누르면 그 점 삭제');
+  };
+
+  /* ── 그리는 중: 1번 점에 붙는가 ── */
+  let drag = -1, runT = 0;
+  map.on('mousemove', e => {
+    if (ana.mode !== 'poly' || !BASE) return;
+    const L = [e.lngLat.lng, e.lngLat.lat];
+    if (drag >= 0) { ana.poly[drag] = L; drawPoly(true); moveLupe(e, L); throttleRun(); return; }
+    if (!ana.closed) {
+      const was = ana.snap;
+      ana.snap = ana.poly.length >= 3 && px(ana.poly[0], L) < 16;
+      map.getCanvas().style.cursor = ana.snap ? 'pointer' : 'crosshair';
+      drawPoly(false, L);
+      if (ana.snap !== was || ana.poly.length < 3)
+        window.__anaHint(ana.snap ? '<b>여기서 닫기</b> — 누르면 구역이 체결됩니다'
+          : (ana.poly.length < 3 ? '꼭짓점을 3개 이상 찍으십시오' : '1번 점(굵은 원)에 가까이 가면 자동으로 붙습니다'));
+    } else {
+      const h = window.__anaHit(e.lngLat, 13);
+      map.getCanvas().style.cursor = h ? 'grab' : '';
+    }
+  });
+
+  function throttleRun(){
+    const t = performance.now();
+    if (t - runT > 260) { runT = t; try { run(); } catch(e){} }
+  }
+
+  /* ── 체결 뒤: 꼭짓점을 끌어 미세조정 ── */
+  map.on('mousedown', e => {
+    if (ana.mode !== 'poly' || !ana.closed || !BASE) return;
+    const h = window.__anaHit(e.lngLat, 13);
+    if (!h) return;
+    if (h.k === 'm') { ana.poly.splice(h.i + 1, 0, [e.lngLat.lng, e.lngLat.lat]); drag = h.i + 1; }
+    else drag = h.i;
+    e.preventDefault(); map.dragPan.disable();
+    map.getCanvas().style.cursor = 'grabbing';
+    lupeEl.style.display = 'block';
+    ensureLupe(); try { lupe.resize(); } catch(e){}
+    const putBld = () => window.__lupeBld && window.__lupeBld(ana.poly[drag] || [0,0]);
+    if (lupeReady) { syncLupe(); putBld(); }
+    else lupe.once('style.load', () => { lupeReady = true; syncLupe(); putBld(); });
+    moveLupe(e, ana.poly[drag]);
+    drawPoly(true);
+  });
+  window.addEventListener('mouseup', () => {
+    if (drag < 0) return;
+    drag = -1; lupeEl.style.display = 'none'; map.dragPan.enable();
+    map.getCanvas().style.cursor = '';
+    drawPoly(true); try { run(); } catch(e){}
+  });
+
+  function moveLupe(e, ll){
+    if (!lupe) return;
+    const r = M.getBoundingClientRect();
+    const x = e.originalEvent.clientX - r.left, y = e.originalEvent.clientY - r.top;
+    let top = y - 232; if (top < 8) top = y + 44;
+    let left = Math.max(8, Math.min(x - 93, r.width - 194));
+    lupeEl.style.left = left + 'px'; lupeEl.style.top = top + 'px';
+    lupe.jumpTo({center:ll, zoom: map.getZoom() + 2.6});
+    syncLupe();
+    xyEl.textContent = ll[1].toFixed(6) + ', ' + ll[0].toFixed(6);
+  }
+
+  /* 모드를 바꾸면 안내도 같이 바뀐다 */
+  document.querySelectorAll('.md').forEach(b => b.addEventListener('click', () => {
+    lupeEl.style.display = 'none'; drag = -1;
+    window.__anaHint(b.dataset.md === 'poly' ? '지도를 눌러 꼭짓점을 찍으십시오 · 3개부터 닫을 수 있습니다' : '');
+  }));
+  /* 되돌리기 — 안 닫힌 상태에서 Backspace 로 마지막 점 지우기, Esc 로 전부 지우기 */
+  window.addEventListener('keydown', ev => {
+    if (ana.mode !== 'poly' || !BASE) return;
+    if (ev.key === 'Backspace' && !ana.closed && ana.poly.length) { ana.poly.pop(); drawPoly(false); }
+    if (ev.key === 'Enter' && !ana.closed && ana.poly.length >= 3) closePoly();
+    if (ev.key === 'Escape') { ana.poly = []; ana.closed = false; ana.snap = false; setAna([]); }
+  });
+})();
 </script>
 </body>
 </html>
